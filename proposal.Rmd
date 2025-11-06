@@ -1,11 +1,14 @@
 ---
 title: "Proposal"
 output: html_document
+author: "Charline Gu(jg4891), Yaxuan Deng(yd2810), Yuanyuan Zhang(yz4982), Wen Li (wl3013)"
 date: "2025-11-06"
 ---
 
+
 Title: Association Between Healthcare Cost and Medical Condition
 ------------------------------------------------------------
+
 ## Objectives:
 Identify characteristics of patients who are both medically high-risk and financially costly.
 
