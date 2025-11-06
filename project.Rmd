@@ -1,0 +1,12 @@
+---
+title: "Project"
+output: github_document
+date: "2025-11-06"
+---
+
+```{r setup, include=FALSE}
+library(readxl)
+dn2018 = read_excel("C:/MEPS/h206b.xlsx")
+```
+
+
