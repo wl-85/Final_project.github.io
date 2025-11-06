@@ -5,8 +5,14 @@ date: "2025-11-06"
 ---
 
 ```{r setup, include=FALSE}
+library(devtools)
+install_github("e-mitchell/meps_r_pkg/MEPS")
+library(MEPS)
 library(readxl)
-dn2018 = read_excel("C:/MEPS/h206b.xlsx")
+
+dn2016 = read_MEPS(year = 2016, type = "DV")
+dn2017 = read_MEPS(year = 2017, type = "DV")
+dn2018 = read_MEPS(year = 2018, type = "DV")
 ```
 
 
