@@ -7,6 +7,8 @@ date: "2025-11-06"
 
 Title: Association Between Healthcare Cost and Medical Condition
 ------------------------------------------------------------
+Dataset: https://www.kaggle.com/datasets/prasad22/healthcare-dataset/discussion/609659
+<br>github dataset access: https://github.com/HHS-AHRQ/MEPS
 
 ## Objectives:
 Identify characteristics of patients who are both medically high-risk and financially costly.
