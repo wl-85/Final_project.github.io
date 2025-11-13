@@ -1,40 +1,33 @@
 ---
 title: "Project"
-output: github_document
-date: "2025-11-06"
+output:
+  html_document:
+    toc: true
+    toc_float: true
 ---
 
-```{r setup, include=FALSE}
-# Run these every time you re-start R:
-  library(foreign)
-  library(devtools)
-  library(tidyverse)
-  library(readr)
-  library(readxl)
-  library(haven)
-  library(survey)
-```
 
-```{r install_meps, eval=FALSE}
-# 这个 chunk 只在 Console 手动跑一次就好，不要在 knit 的时候自动跑
-devtools::install_github("e-mitchell/meps_r_pkg/MEPS")
+```{r setup, include=FALSE}
+# 加载所有要用的包
+library(devtools)
+library(tidyverse)
+library(readr)
+library(readxl)
+library(haven)
+library(survey)
 library(MEPS)
-```
 
-```{r setup, include=FALSE}
-## 读入 2023 Full-Year Consolidated（HC-251）
+# 读 2023 MEPS
+# 2023 Full-Year Consolidated（HC-251）
 ## 人水平费用 + 人口学 + 抽样设计变量
 fyc23  <- read_MEPS(file = "h251")
+cond23 <- read_MEPS(file = "h249")
 
 ## 读入 2023 Medical Conditions（HC-249）
 ## 疾病 / CCSR
-cond23 <- read_MEPS(file = "h249")
-
-## 可选：把变量名都变成小写，后面写起来舒服
 names(fyc23)  <- tolower(names(fyc23))
 names(cond23) <- tolower(names(cond23))
 
-## 建立 survey design 对象（之后做所有加权分析都用 des23）
 des23 <- svydesign(
   ids    = ~varpsu,
   strata = ~varstr,
@@ -42,10 +35,22 @@ des23 <- svydesign(
   data   = fyc23,
   nest   = TRUE
 )
+```
 
-## 快速检查一下总费用变量（已经变成小写 totexp23）
+
+```{r}
+# 这个 chunk 只在 Console 手动跑一次就好，不要在 knit 的时候自动跑
+# devtools::install_github("e-mitchell/meps_r_pkg/MEPS")
+# library(MEPS)
+```
+
+
+```{r}
+## 快速检查一下总费用变量（已经变成小写 totexp23）一致
 summary(fyc23$totexp23)
-
+names(fyc23)[1:30]              # 看看前几个变量名是否正确
+grep("23", names(fyc23), value = TRUE)[1:20]
+nrow(fyc23) 
 ```
 
 
