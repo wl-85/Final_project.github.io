@@ -10,9 +10,19 @@ install_github("e-mitchell/meps_r_pkg/MEPS")
 library(MEPS)
 library(readxl)
 
-dn2016 = read_MEPS(year = 2016, type = "DV")
-dn2017 = read_MEPS(year = 2017, type = "DV")
-dn2018 = read_MEPS(year = 2018, type = "DV")
+# Import data
+# Import the data of Full-Year Consolidated Data File in 2023
+meps2023_fy <- read_MEPS(year = 2023, file = "h251")
+
+# Import the data of Medical Conditions File in 2023
+meps2023_mc <- read_MEPS(year = 2023, file = "h249")
+
 ```
 
+
+Data cleaning
+```{r}
+# Key outcome variable in file "h251"
+# TOTEXP23
+```
 
