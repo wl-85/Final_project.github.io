@@ -11,12 +11,12 @@
 
 
 
-<title>P8105 Final Project Proposal</title>
+<title>P8105 Final Project: High-Cost Patients in MEPS 2023</title>
 
 <script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
@@ -274,67 +274,298 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">P8105 Final Project Proposal</h1>
-<h4 class="author"><p>Team: Charline Gu (jg4891),<br />
-Yaxuan Deng (yd2810),<br />
-Yuanyuan Zhang (yz4982),<br />
-Wen Li (wl3013)</p></h4>
+<h1 class="title toc-ignore">P8105 Final Project: High-Cost Patients in
+MEPS 2023</h1>
 
 </div>
 
 
-<div id="objectives" class="section level2">
-<h2>Objectives:</h2>
-<p>Identify characteristics of patients who are both medically high-risk
-and financially costly.</p>
-<p>Examine patterns and drivers of healthcare expenditures across
-different conditions and populations.</p>
-<p>Dataset can be found at here(<a
-href="https://meps.ahrq.gov/data_stats/download_data/pufs/h251/h251doc.shtml"
-class="uri">https://meps.ahrq.gov/data_stats/download_data/pufs/h251/h251doc.shtml</a>)
-(<a
-href="https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-249"
-class="uri">https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-249</a>)</p>
+<style>
+.main-container {
+  max-width: 1100px;
+}
+
+h1.title {
+  display: none;
+}
+
+/* HERO 区域：医疗商业风背景图 + 半透明遮罩 */
+.hero-section {
+  position: relative;
+  margin: -30px -15px 40px -15px; /* 拉满页面宽度 */
+  height: 360px;
+  background-image: linear-gradient(
+      rgba(10, 25, 47, 0.65),
+      rgba(10, 25, 47, 0.80)
+    ),
+    url("img/medical-bg.jpg"); /* <<< 在这里换成你的背景图路径 ,背景图在文件img里*/
+  background-size: cover;
+  background-position: center;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-inner {
+  max-width: 850px;
+  padding: 1.5rem;
+  text-align: left;
+}
+
+.hero-kicker {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.8rem;
+  opacity: 0.85;
+  margin-bottom: 0.4rem;
+}
+
+.hero-title {
+  font-size: 2.1rem;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+}
+
+.hero-subtitle {
+  font-size: 1rem;
+  line-height: 1.6;
+  max-width: 620px;
+  opacity: 0.92;
+}
+
+.hero-buttons {
+  margin-top: 1.2rem;
+}
+
+.hero-btn-primary,
+.hero-btn-ghost {
+  display: inline-block;
+  padding: 0.55rem 1.3rem;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  text-decoration: none;
+  margin-right: 0.7rem;
+  transition: all 0.2s ease;
+}
+
+.hero-btn-primary {
+  background-color: #1f77b4;
+  color: #ffffff;
+  border: 1px solid #1f77b4;
+}
+
+.hero-btn-primary:hover {
+  background-color: #14527d;
+  border-color: #14527d;
+  text-decoration: none;
+  color: #ffffff;
+}
+
+.hero-btn-ghost {
+  background-color: transparent;
+  color: #ffffff;
+  border: 1px solid #ffffff;
+}
+
+.hero-btn-ghost:hover {
+  background-color: #ffffff;
+  color: #1f77b4;
+  text-decoration: none;
+}
+
+/* 三个信息卡片区域 */
+.section-heading {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 0.6rem;
+}
+
+.section-subtitle {
+  font-size: 0.95rem;
+  color: #555;
+  margin-bottom: 1.1rem;
+}
+
+.info-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.info-card {
+  flex: 1 1 250px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  border: 1px solid rgba(0,0,0,0.03);
+}
+
+.info-card-title {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 0.35rem;
+}
+
+.info-card-icon {
+  font-size: 1rem;
+  margin-right: 0.4rem;
+  color: #1f77b4;
+}
+
+.info-card-text {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* 快速链接区：三个大按钮 */
+.quick-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 0.3rem;
+  margin-bottom: 1.8rem;
+}
+
+.quick-link-btn {
+  flex: 1 1 220px;
+  border-radius: 999px;
+  border: 1px solid #dde2eb;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: #1a2733;
+  background-color: #f7f9fb;
+  transition: all 0.2s ease;
+}
+
+.quick-link-btn i {
+  margin-right: 0.45rem;
+}
+
+.quick-link-btn:hover {
+  background-color: #e3edf9;
+  border-color: #c5d4ee;
+  text-decoration: none;
+}
+
+/* Team 小卡片（简版，详细在 team.html 页面） */
+.team-strip-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.team-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.team-pill {
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  background-color: #eef3fb;
+  color: #1a2733;
+}
+</style>
+<div class="hero-section">
+<div class="hero-inner">
+<div class="hero-kicker">
+P8105 Final Project · Columbia Public Health
 </div>
-<div id="background" class="section level2">
-<h2>Background:</h2>
-<p>In 2023, healthcare spending in the United States accounted for 17.6%
-of the national GDP, totaling approximately $4.9 trillion. Despite this
-immense expenditure, millions of Americans continue to struggle with
-chronic diseases, and healthcare delivery remains highly fragmented.
-This inefficiency not only strains the system financially but also
-results in poorer outcomes for those who need care the most. One of the
-central challenges is the “hot spotters” problem—a small subset of
-patients who incur the highest costs often receive the least coordinated
-and least effective care. Understanding who these patients are, what
-conditions they have, and how their costs evolve over time is critical
-for developing targeted interventions that improve health outcomes while
-reducing unnecessary spending.</p>
+<div class="hero-title">
+High-Cost Patients in U.S. Healthcare: Evidence from MEPS 2023
 </div>
-<div id="study-purpose" class="section level2">
-<h2>Study Purpose:</h2>
-<p>This project aims to analyze the relationship between healthcare
-costs and medical conditions to uncover patterns among high-cost
-patients. By identifying key demographic and clinical characteristics
-associated with elevated healthcare spending, we can inform strategies
-for better resource allocation and more integrated models of care.</p>
+<div class="hero-subtitle">
+Using the 2023 Medical Expenditure Panel Survey (MEPS), we replicate and
+extend Mitchell (2023) to study how healthcare spending is concentrated,
+who the high-cost patients are, which conditions drive spending, and how
+costs are distributed across services and payers.
 </div>
-<div id="methods" class="section level2">
-<h2>Methods:</h2>
-<p>To achieve these goals, we conducted statistical analyses using
-patient-level cost and diagnosis data. We applied techniques such as
-regression modeling and clustering to detect trends and associations
-between chronic conditions and total healthcare expenditures.
-Additionally, we developed interactive visualizations and a web-based
-dashboard in R to make the results accessible for policy analysts,
-healthcare administrators, and researchers.</p>
+<div class="hero-buttons">
+<a href="project.html" class="hero-btn-primary">
+<i class="fa-solid fa-chart-line"></i> Explore code &amp; results </a>
+<a href="proposal.html" class="hero-btn-ghost">
+<i class="fa-regular fa-file-lines"></i> Read project proposal </a>
 </div>
-<div id="expected-impact" class="section level2">
-<h2>Expected Impact:</h2>
-<p>Our findings will contribute to a deeper understanding of cost
-drivers within the healthcare system and support efforts to design
-value-based care models that prioritize prevention, care coordination,
-and patient-centered outcomes.</p>
+</div>
+</div>
+<p>Overview</p>
+<p>Below is a quick overview of our project. For details, please use the
+navigation bar or the buttons above.</p>
+<div class="info-grid">
+<div class="info-card">
+<div class="info-card-title">
+<i class="fa-solid fa-hospital-user info-card-icon"></i> High-cost
+patients
+</div>
+<div class="info-card-text">
+We define expenditure groups (top 1%, 5%, 10%, bottom 50%) using
+survey-weighted percentiles of total annual expenditures (TOTEXP23). We
+then describe age, sex, race/ethnicity, income, and insurance across
+these groups.
+</div>
+</div>
+<div class="info-card">
+<div class="info-card-title">
+<i class="fa-solid fa-heart-pulse info-card-icon"></i> Conditions &amp;
+disease burden
+</div>
+<div class="info-card-text">
+Using the 2023 Medical Conditions file (HC-249) and CCSR categories, we
+identify the most commonly treated conditions and quantify their
+contribution to total spending among the top 5% of spenders.
+</div>
+</div>
+<div class="info-card">
+<div class="info-card-title">
+<i class="fa-solid fa-notes-medical info-card-icon"></i> Services,
+payers &amp; dashboards
+</div>
+<div class="info-card-text">
+We decompose expenditures by service type (inpatient, outpatient, ER,
+prescriptions, home health) and payer (out-of-pocket, private insurance,
+Medicare, Medicaid), and implement interactive visualizations using
+<code>plotly</code> and <code>flexdashboard</code>.
+</div>
+</div>
+</div>
+Quick links
+<div class="section-subtitle">
+快速进入你可能最关心的部分（点击下方按钮）：
+</div>
+<div class="quick-links">
+<a class="quick-link-btn" href="project.html">
+<i class="fa-solid fa-chart-column"></i> Interactive figures &amp;
+detailed results </a> <a class="quick-link-btn" href="proposal.html">
+<i class="fa-regular fa-file-lines"></i> Study aims, background &amp;
+methods </a> <a class="quick-link-btn" href="team.html">
+<i class="fa-regular fa-user-group"></i> Meet the team </a>
+</div>
+Team
+<div class="team-strip-title">
+Project team · Mailman School of Public Health
+</div>
+<div class="team-strip">
+<div class="team-pill">
+Charline Gu (jg4891)
+</div>
+<div class="team-pill">
+Yaxuan Deng (yd2810)
+</div>
+<div class="team-pill">
+Yuanyuan Zhang (yz4982)
+</div>
+<div class="team-pill">
+Wen Li (wl3013)
+</div>
 </div>
 
 

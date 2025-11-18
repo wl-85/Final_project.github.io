@@ -53,6 +53,366 @@ grep("23", names(fyc23), value = TRUE)[1:20]
 nrow(fyc23) 
 ```
 
+## data clean
+```{r}
+fyc23_clean <- fyc23
+
+# 只保留有正权重的人
+fyc23_clean <- fyc23_clean[fyc23_clean$perwt23f > 0, ]
+
+# 把所有数值变量里的特殊缺失码(-1, -7, -8, -9, -15)改成 NA
+num_vars <- sapply(fyc23_clean, is.numeric)
+
+for (j in which(num_vars)) {
+  x <- fyc23_clean[[j]]
+  x[x %in% c(-1, -7, -8, -9, -15)] <- NA
+  fyc23_clean[[j]] <- x
+}
+
+# 只保留本项目要用到的变量（后面可再扩展）
+keep_vars <- c(
+  "dupersid", "panel", "varstr", "varpsu", "perwt23f",
+  "totexp23",           # 总费用
+  "agelast", "sex", "racethx",
+  "povcat23", "inscov23"
+)
+
+fyc23_clean <- fyc23_clean[ , keep_vars]
+
+# 用清理后的数据重新建 survey design
+des23 <- svydesign(
+  ids    = ~varpsu,
+  strata = ~varstr,
+  weights= ~perwt23f,
+  data   = fyc23_clean,
+  nest   = TRUE
+)
+
+```
+
+
+## 构造人群特征变量
+```{r}
+# 2.1 先创建空的新变量列
+
+fyc23_clean$age_cat4  <- NA
+fyc23_clean$sex_f     <- NA
+fyc23_clean$race4     <- NA
+fyc23_clean$povcat_f  <- NA
+fyc23_clean$inscov_f  <- NA
+
+# 2.2 年龄分组：0–17, 18–44, 45–64, 65+
+fyc23_clean$age_cat4[fyc23_clean$agelast <= 17] <-
+  "0-17"
+fyc23_clean$age_cat4[fyc23_clean$agelast >= 18 &
+                     fyc23_clean$agelast <= 44] <-
+  "18-44"
+fyc23_clean$age_cat4[fyc23_clean$agelast >= 45 &
+                     fyc23_clean$agelast <= 64] <-
+  "45-64"
+fyc23_clean$age_cat4[fyc23_clean$agelast >= 65] <-
+  "65+"
+
+fyc23_clean$age_cat4 <- factor(
+  fyc23_clean$age_cat4,
+  levels = c("0-17", "18-44", "45-64", "65+")
+)
+
+# 2.3 性别：1=Male, 2=Female
+fyc23_clean$sex_f[fyc23_clean$sex == 1] <- "Male"
+fyc23_clean$sex_f[fyc23_clean$sex == 2] <- "Female"
+fyc23_clean$sex_f <- factor(
+  fyc23_clean$sex_f,
+  levels = c("Male", "Female")
+)
+
+# 2.4 种族/族裔：NH White, NH Black, Hispanic, NH Asian/Other
+fyc23_clean$race4[fyc23_clean$racethx == 1] <- "Hispanic"
+fyc23_clean$race4[fyc23_clean$racethx == 2] <- "NH White"
+fyc23_clean$race4[fyc23_clean$racethx == 3] <- "NH Black"
+fyc23_clean$race4[fyc23_clean$racethx %in% c(4, 5)] <- "NH Asian/Other"
+
+fyc23_clean$race4 <- factor(
+  fyc23_clean$race4,
+  levels = c("NH White", "NH Black", "Hispanic", "NH Asian/Other")
+)
+
+# 2.5 贫困线分组 POVCAT23 : 1–5
+# MEPS 里的 High income = 家庭收入 ≥ 4 倍联邦贫困线，
+#不是什么 “top 1% / top 10% 超富”，而是“中产及以上的大块人群”。
+
+pov_labels <- c(
+  "Poor", "Near-poor", "Low income",
+  "Middle income", "High income"
+)
+
+fyc23_clean$povcat_f <- factor(
+  fyc23_clean$povcat23,
+  levels = 1:5,
+  labels = pov_labels
+)
+
+# 2.6 保险 INSCOV23 : 1 any private, 2 public only, 3 uninsured
+ins_labels <- c("Any private", "Public only", "Uninsured")
+
+fyc23_clean$inscov_f <- factor(
+  fyc23_clean$inscov23,
+  levels = 1:3,
+  labels = ins_labels
+)
+
+# 2.7 再用更新后的数据重建 design
+des23 <- svydesign(
+  ids    = ~varpsu,
+  strata = ~varstr,
+  weights= ~perwt23f,
+  data   = fyc23_clean,
+  nest   = TRUE
+)
+
+# 小检查:
+svytable(~ age_cat4, des23)
+svytable(~ race4, des23)
+svytable(~ povcat_f, des23)
+svytable(~ inscov_f, des23)
+
+```
+
+```{r}
+# 看 agelast 和 age_cat4 的对应关系
+table(fyc23_clean$age_cat4, useNA = "ifany")
+
+# 对每个年龄组，分别看年龄的最小 / 最大值
+tapply(
+  fyc23_clean$agelast,
+  fyc23_clean$age_cat4,
+  function(x) range(x, na.rm = TRUE)
+)
+
+table(fyc23_clean$racethx, fyc23_clean$race4, useNA = "ifany")
+
+
+table(fyc23_clean$povcat23, fyc23_clean$povcat_f, useNA = "ifany")
+
+
+table(fyc23_clean$inscov23, fyc23_clean$inscov_f, useNA = "ifany")
+
+
+```
+
+定义 Top 1%、Top 5%、Top 10%、Bottom 50%
+```{r}
+# 先算 TOTEXP23 的加权分位数
+
+# 3.1 计算加权分位数
+exp_cuts <- svyquantile(
+  ~ totexp23,
+  design    = des23,
+  quantiles = c(0.50, 0.90, 0.95, 0.99),
+  ci        = FALSE
+)
+
+exp_cuts   # knit 时 check
+str(exp_cuts)
+```
+
+
+```{r}
+q_vec <- as.numeric(exp_cuts$totexp23)
+
+# 对应顺序：0.50, 0.90, 0.95, 0.99
+p50 <- q_vec[1]  # 0.5 分位数
+p90 <- q_vec[2]  # 0.9
+p95 <- q_vec[3]  # 0.95
+p99 <- q_vec[4]  # 0.99
+
+# 新建 exp_group 变量
+fyc23_clean$exp_group <- NA
+
+fyc23_clean$exp_group[fyc23_clean$totexp23 >= p99] <- "Top 1%"
+fyc23_clean$exp_group[fyc23_clean$totexp23 >= p95 &
+                      fyc23_clean$totexp23 <  p99] <- "Top 5%"
+fyc23_clean$exp_group[fyc23_clean$totexp23 >= p90 &
+                      fyc23_clean$totexp23 <  p95] <- "Top 10%"
+fyc23_clean$exp_group[fyc23_clean$totexp23 <= p50] <- "Bottom 50%"
+
+# 50–90%
+fyc23_clean$exp_group[
+  is.na(fyc23_clean$exp_group) &
+    !is.na(fyc23_clean$totexp23)
+] <- "50–90%"
+
+fyc23_clean$exp_group <- factor(
+  fyc23_clean$exp_group,
+  levels = c("Bottom 50%", "50–90%", "Top 10%", "Top 5%", "Top 1%")
+)
+
+# 用带 exp_group 的数据重建 design
+des23 <- svydesign(
+  ids    = ~varpsu,
+  strata = ~varstr,
+  weights= ~perwt23f,
+  data   = fyc23_clean,
+  nest   = TRUE
+)
+
+# 检查各花费组的加权人数和比例
+svytable(~ exp_group, des23)
+svytable(~ exp_group, des23) / sum(weights(des23))
+
+```
+
+## 处理cond23数据
+```{r}
+# 从 cond23 复制一份
+cond23_clean <- cond23
+
+# 数值型：特殊缺失码 -> NA
+num_vars_c <- sapply(cond23_clean, is.numeric)
+
+for (j in which(num_vars_c)) {
+  x <- cond23_clean[[j]]
+  x[x %in% c(-1, -7, -8, -9, -15)] <- NA
+  cond23_clean[[j]] <- x
+}
+
+# CCSR 字段是字符型，列名一般是 ccsr1x, ccsr2x, ccsr3x, ccsr4x
+ccsr_cols <- grep("^ccsr", names(cond23_clean), value = TRUE)
+
+for (nm in ccsr_cols) {
+  x <- cond23_clean[[nm]]
+  # 有些文件里缺失用 "-1" 或 "-15"
+  x[x %in% c("-1", "-15")] <- NA
+  cond23_clean[[nm]] <- x
+}
+
+# 主 CCSR：优先用 ccsr1x，缺失再用2/3/4
+cond23_clean$ccsr_main <- cond23_clean$ccsr1x
+
+idx_na <- is.na(cond23_clean$ccsr_main) & !is.na(cond23_clean$ccsr2x)
+cond23_clean$ccsr_main[idx_na] <- cond23_clean$ccsr2x[idx_na]
+
+idx_na <- is.na(cond23_clean$ccsr_main) & !is.na(cond23_clean$ccsr3x)
+cond23_clean$ccsr_main[idx_na] <- cond23_clean$ccsr3x[idx_na]
+
+idx_na <- is.na(cond23_clean$ccsr_main) & !is.na(cond23_clean$ccsr4x)
+cond23_clean$ccsr_main[idx_na] <- cond23_clean$ccsr4x[idx_na]
+
+# 只保留主 CCSR 不缺失的记录
+cond23_clean <- cond23_clean[!is.na(cond23_clean$ccsr_main), ]
+
+# 只保留后续一定会用到的变量
+keep_cond_vars <- c(
+  "dupersid", "condidx",
+  "varstr", "varpsu", "perwt23f",
+  "ccsr_main"
+)
+
+cond23_clean <- cond23_clean[ , keep_cond_vars]
+
+# 看最常见的前 10 个 CCSR
+head( sort(table(cond23_clean$ccsr_main), decreasing = TRUE), 10 )
+```
+
+
+## double check
+```{r}
+## 1. 计算 survey 设计下的“总人口”
+total_pop <- sum(weights(des23))
+total_pop
+# 看看大概是多少，应该在 3亿多 这个数量级
+
+## 2. 各个变量的加权频数
+tab_age   <- svytable(~ age_cat4,  des23)
+tab_race  <- svytable(~ race4,     des23)
+tab_pov   <- svytable(~ povcat_f,  des23)
+tab_ins   <- svytable(~ inscov_f,  des23)
+
+## 3. 各个变量加权和，应该都 ≈ total_pop
+sum_age  <- sum(tab_age)
+sum_race <- sum(tab_race)
+sum_pov  <- sum(tab_pov)
+sum_ins  <- sum(tab_ins)
+
+c(
+  total_pop = total_pop,
+  sum_age   = sum_age,
+  sum_race  = sum_race,
+  sum_pov   = sum_pov,
+  sum_ins   = sum_ins
+)
+
+## 4. 看差值（应该非常接近 0，只是小的四舍五入误差）
+c(
+  age_minus_total  = sum_age  - total_pop,
+  race_minus_total = sum_race - total_pop,
+  pov_minus_total  = sum_pov  - total_pop,
+  ins_minus_total  = sum_ins  - total_pop
+)
+
+```
+
+```{r}
+## 年龄分布：加权频数 + 比例
+tab_age
+prop_age <- prop.table(tab_age)
+prop_age
+sum(prop_age)  # 应该 ≈ 1
+
+## 种族/族裔分布
+tab_race
+prop_race <- prop.table(tab_race)
+prop_race
+sum(prop_race)  # ≈ 1
+
+## 贫困线分布
+tab_pov
+prop_pov <- prop.table(tab_pov)
+prop_pov
+sum(prop_pov)  # ≈ 1
+
+## 保险分布
+tab_ins
+prop_ins <- prop.table(tab_ins)
+prop_ins
+sum(prop_ins)  # ≈ 1
+```
+
+```{r}
+## 看每个年龄组的样本数量（未加权）
+table(fyc23_clean$age_cat4, useNA = "ifany")
+
+## 看每个年龄组里的 agelast 最小值 / 最大值
+tapply(
+  fyc23_clean$agelast,
+  fyc23_clean$age_cat4,
+  function(x) range(x, na.rm = TRUE)
+)
+```
+
+```{r}
+## racethx -> race4 映射表
+table(fyc23_clean$racethx, fyc23_clean$race4, useNA = "ifany")
+
+## povcat23 -> povcat_f
+table(fyc23_clean$povcat23, fyc23_clean$povcat_f, useNA = "ifany")
+
+## inscov23 -> inscov_f
+table(fyc23_clean$inscov23, fyc23_clean$inscov_f, useNA = "ifany")
+
+```
+
+```{r}
+## 花费分组的加权频数
+tab_exp <- svytable(~ exp_group, des23)
+tab_exp
+
+## 花费分组的加权比例
+prop_exp <- prop.table(tab_exp)
+prop_exp
+sum(prop_exp)  # ≈ 1
+```
+
 
 Data cleaning
 ```{r}
