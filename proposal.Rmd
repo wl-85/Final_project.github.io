@@ -7,7 +7,7 @@ author: |
   Yuanyuan Zhang (yz4982),  
   Wen Li (wl3013)
 output:
-  html_document
+  github_document
 ---
 
 ## Objectives:
@@ -15,8 +15,7 @@ Identify characteristics of patients who are both medically high-risk and financ
 
 Examine patterns and drivers of healthcare expenditures across different conditions and populations.
 
-Dataset can be found at here(https://meps.ahrq.gov/data_stats/download_data/pufs/h251/h251doc.shtml)
-(https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-249)
+Dataset can be found at [H251](https://meps.ahrq.gov/data_stats/download_data/pufs/h251/h251doc.shtml) and [H249](https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-249).
 
 ## Background:
 In 2023, healthcare spending in the United States accounted for 17.6% of the national GDP, totaling approximately $4.9 trillion. Despite this immense expenditure, millions of Americans continue to struggle with chronic diseases, and healthcare delivery remains highly fragmented. This inefficiency not only strains the system financially but also results in poorer outcomes for those who need care the most.
