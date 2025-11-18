@@ -1,0 +1,20 @@
+name: "P8105 Final Project"
+output_dir: "."
+navbar:
+  title: "Welcome To Our Project for P8105!"
+  right:
+    - text: "Home"
+      href: index.html
+    - text: "Proposal"
+      href: proposal.html
+    - text: "Code & Results"
+      href: project.html
+    - text: "Team"
+      href: team.html
+    - icon: fa-github fa-lg
+      href: "https://github.com/wl-85/Final_project.github.io"
+output:
+  html_document
+
+
+

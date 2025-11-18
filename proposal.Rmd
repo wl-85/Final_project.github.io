@@ -1,21 +1,22 @@
 ---
-title: "Proposal"
-output: html_document
-author: "Charline Gu(jg4891), Yaxuan Deng(yd2810), Yuanyuan Zhang(yz4982), Wen Li (wl3013)"
-date: "2025-11-06"
+title: "P8105 Final Project Proposal"
+author: |
+  Team: 
+  Charline Gu (jg4891),  
+  Yaxuan Deng (yd2810),  
+  Yuanyuan Zhang (yz4982),  
+  Wen Li (wl3013)
+output:
+  html_document
 ---
-
-Title: Association Between Healthcare Cost and Medical Condition
-------------------------------------------------------------
-Dataset: https://www.kaggle.com/datasets/prasad22/healthcare-dataset/discussion/609659
-<br>github dataset access: https://github.com/HHS-AHRQ/MEPS 
 
 ## Objectives:
 Identify characteristics of patients who are both medically high-risk and financially costly.
 
 Examine patterns and drivers of healthcare expenditures across different conditions and populations.
 
-Dataset can be found at here(https://meps.ahrq.gov/data_stats/download_data/pufs/h206b/h206bcb.pdf).
+Dataset can be found at here(https://meps.ahrq.gov/data_stats/download_data/pufs/h251/h251doc.shtml)
+(https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-249)
 
 ## Background:
 In 2023, healthcare spending in the United States accounted for 17.6% of the national GDP, totaling approximately $4.9 trillion. Despite this immense expenditure, millions of Americans continue to struggle with chronic diseases, and healthcare delivery remains highly fragmented. This inefficiency not only strains the system financially but also results in poorer outcomes for those who need care the most.

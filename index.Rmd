@@ -1,0 +1,12 @@
+---
+title: "P8105 Final Project: High-Cost Patients in MEPS 2023"
+output: html_document
+---
+
+## Welcome
+
+This is the home page of our P8105 final project.
+
+- See our [Code & Results](project.html)
+- See our [Team](team.html)
+- See our [Proposal](proposal.html)
