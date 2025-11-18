@@ -67,7 +67,7 @@ header-includes:
       <a class="team-icon-circle" href="https://github.com/charlinee1" target="_blank">
         <i class="fab fa-github"></i>
       </a>
-      <a class="team-icon-circle" href="https://www.linkedin.com/in/CHARLINE_LINKEDIN/" target="_blank">
+      <a class="team-icon-circle" href="https://www.linkedin.com/in/jinghg/" target="_blank">
         <i class="fab fa-linkedin-in"></i>
       </a>
     </div>
@@ -75,12 +75,11 @@ header-includes:
 
   <div class="team-card">
     <div class="team-name">Yaxuan Deng</div>
-    <div class="team-location">New York, NY</div>
     <div class="team-icons">
       <a class="team-icon-circle" href="https://github.com/Dia_xuan" target="_blank">
         <i class="fab fa-github"></i>
       </a>
-      <a class="team-icon-circle" href="https://www.linkedin.com/in/YAXUAN_LINKEDIN/" target="_blank">
+      <a class="team-icon-circle" href="https://www.linkedin.com/in/yaxuan-deng-955604336" target="_blank">
         <i class="fab fa-linkedin-in"></i>
       </a>
     </div>
@@ -88,7 +87,6 @@ header-includes:
 
   <div class="team-card">
     <div class="team-name">Yuanyuan Zhang</div>
-    <div class="team-location">New York, NY</div>
     <div class="team-icons">
       <a class="team-icon-circle" href="https://github.com/czyuan02" target="_blank">
         <i class="fab fa-github"></i>
@@ -101,7 +99,6 @@ header-includes:
 
   <div class="team-card">
     <div class="team-name">Wen Li</div>
-    <div class="team-location">New York, NY</div>
     <div class="team-icons">
       <a class="team-icon-circle" href="https://github.com/wl-85" target="_blank">
         <i class="fab fa-github"></i>
