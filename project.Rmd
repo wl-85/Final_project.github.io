@@ -118,7 +118,7 @@ fyc23_clean$age_cat4 <- factor(
   levels = c("0-17", "18-44", "45-64", "65+")
 )
 
-# 2.3 性别：1=Male, 2=Female
+# 2.3 Gender: 1=Male, 2=Female
 fyc23_clean$sex_f[fyc23_clean$sex == 1] <- "Male"
 fyc23_clean$sex_f[fyc23_clean$sex == 2] <- "Female"
 fyc23_clean$sex_f <- factor(
@@ -126,7 +126,7 @@ fyc23_clean$sex_f <- factor(
   levels = c("Male", "Female")
 )
 
-# 2.4 种族/族裔：NH White, NH Black, Hispanic, NH Asian/Other
+# 2.4 Race: NH White, NH Black, Hispanic, NH Asian/Other
 fyc23_clean$race4[fyc23_clean$racethx == 1] <- "Hispanic"
 fyc23_clean$race4[fyc23_clean$racethx == 2] <- "NH White"
 fyc23_clean$race4[fyc23_clean$racethx == 3] <- "NH Black"
@@ -152,7 +152,7 @@ fyc23_clean$povcat_f <- factor(
   labels = pov_labels
 )
 
-# 2.6 保险 INSCOV23 : 1 any private, 2 public only, 3 uninsured
+# 2.6 Insurance type (INSCOV23): 1 any private, 2 public only, 3 uninsured
 ins_labels <- c("Any private", "Public only", "Uninsured")
 
 fyc23_clean$inscov_f <- factor(
@@ -170,7 +170,7 @@ des23 <- svydesign(
   nest   = TRUE
 )
 
-# 小检查:
+# Quick check
 svytable(~ age_cat4, des23)
 svytable(~ race4, des23)
 svytable(~ povcat_f, des23)
@@ -413,10 +413,4 @@ prop_exp
 sum(prop_exp)  # ≈ 1
 ```
 
-
-Data cleaning
-```{r}
-# Key outcome variable in file "h251"
-# TOTEXP23
-```
 
