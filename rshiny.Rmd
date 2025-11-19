@@ -119,7 +119,7 @@ age_group <- fyc23_clean |> distinct(age_cat4) |> pull()
 
 selectInput(
   inputId = "age_choice",
-  label = h3("Select an age group"),
+  label = h2("Select an age group"),
   choices = age_group,
   selected = "65+"
 )
@@ -151,8 +151,7 @@ layout(
 
 -----------------------------------------------------------------------
 
-### Chart B Poverty Line Among People in Different Insurance Groups
-
+### Chart B Household Income Distribution Among People in Different Insurance Groups
 ```{r, echo=FALSE}
 insur_group <- fyc23_clean |> distinct(inscov_f) |> pull()
 
@@ -176,24 +175,45 @@ renderPlotly({
       type = "bar"
     )|>
 layout(
-  xaxis = list(title = "Poverty Line"),
+  xaxis = list(title = "Household Income Level"),
   yaxis = list(title = "Number of People")
 )
 })
 ```
 
-### Chart C
+### Chart C Total Expenditure among Male and Female
 
 ```{r, echo=FALSE}
 
+sex_group <- fyc23_clean |> distinct(sex_f) |> pull()
 
+selectInput(
+  inputId = "sex_choice",
+  label = h3("Choose a sex"),
+  choices = sex_group,
+  selected = "Male"
+)
 
 ```
 
 
 ```{r, echo=FALSE}
-
-
+renderPlotly({
+  fyc23_clean |>
+    filter(sex_f == input[["sex_choice"]]) |>
+    plot_ly(
+      x = ~inscov_f,
+      y = ~totexp23,
+      color = ~race4,
+      type = "scatter",
+      mode = "markers"
+    )|>
+layout(
+  xaxis = list(title = "Insurance type"),
+  yaxis = list(title = "Total Expenditures (USD) in 2023")
+) 
+})
 ```
+
 
 
