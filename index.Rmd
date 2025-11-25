@@ -211,7 +211,39 @@ Overview
 Below is a quick overview of our project. <br> For details, please use the navigation bar or the buttons above.
 
 <div class="info-grid"> <div class="info-card"> <div class="info-card-title"> <i class="fa-solid fa-hospital-user info-card-icon"></i> High-cost patients </div> <div class="info-card-text"> We define expenditure groups (top 1%, 5%, 10%, bottom 50%) using survey-weighted percentiles of total annual expenditures (TOTEXP23). We then describe age, sex, race/ethnicity, income, and insurance across these groups. </div> </div> <div class="info-card"> <div class="info-card-title"> <i class="fa-solid fa-heart-pulse info-card-icon"></i> Conditions & disease burden </div> <div class="info-card-text"> Using the 2023 Medical Conditions file (HC-249) and CCSR categories, we identify the most commonly treated conditions and quantify their contribution to total spending among the top 5% of spenders. </div> </div> <div class="info-card"> <div class="info-card-title"> <i class="fa-solid fa-notes-medical info-card-icon"></i> Services, payers & dashboards </div> <div class="info-card-text"> We decompose expenditures by service type (inpatient, outpatient, ER, prescriptions, home health) and payer (out-of-pocket, private insurance, Medicare, Medicaid), and implement interactive visualizations using <code>plotly</code> and <code>flexdashboard</code>. </div> </div> </div>
+
 Quick links
-<div class="section-subtitle"> Quickly jump to the part you might be most concerned about (click the button below)： </div> <div class="quick-links"> <a class="quick-link-btn" href="project.html"> <i class="fa-solid fa-chart-column"></i> Interactive figures & detailed results </a> <a class="quick-link-btn" href="proposal.html"> <i class="fa-regular fa-file-lines"></i> Study aims, background & methods </a> <a class="quick-link-btn" href="team.html"> <i class="fa-regular fa-user-group"></i> Meet the team </a> </div>
+<div class="section-subtitle">
+  Quickly jump to the part you might be most concerned about (click the button below):
+</div>
+
+<div class="quick-links">
+
+  <a class="quick-link-btn" 
+   href="https://jinghg.shinyapps.io/final_projectgithub/"
+   target="_blank" rel="noopener noreferrer">
+   <i class="fa-solid fa-chart-column"></i> Interactive Dashboard
+</a>
+
+  
+  <a class="quick-link-btn" href="proposal.html">
+    <i class="fa-regular fa-file-lines"></i>
+    Study aims, background & methods
+  </a>
+
+  <a class="quick-link-btn" href="team.html">
+    <i class="fa-regular fa-user-group"></i>
+    Meet the team
+  </a>
+
+
+
+</div>
+
+
+
+</a>
+</a>
+
 Team
 <div class="team-strip-title">Project team · Mailman School of Public Health</div> <div class="team-strip"> <div class="team-pill">Charline Gu (jg4891)</div> <div class="team-pill">Yaxuan Deng (yd2810)</div> <div class="team-pill">Yuanyuan Zhang (yz4982)</div> <div class="team-pill">Wen Li (wl3013)</div> </div>
