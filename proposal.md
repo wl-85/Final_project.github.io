@@ -1,0 +1,61 @@
+P8105 Final Project Proposal
+================
+Team: Charline Gu (jg4891),  
+Yaxuan Deng (yd2810),  
+Yuanyuan Zhang (yz4982),  
+Wen Li (wl3013)
+
+## Objectives:
+
+Identify characteristics of patients who are both medically high-risk
+and financially costly.
+
+Examine patterns and drivers of healthcare expenditures across different
+conditions and populations.
+
+Dataset can be found at
+[H251](https://meps.ahrq.gov/data_stats/download_data/pufs/h251/h251doc.shtml)
+and
+[H249](https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-249).
+You can also access the codebook by clicking
+[it](https://meps.ahrq.gov/data_stats/download_data_files_codebook.jsp?PUFId=H251).
+
+## Background:
+
+In 2023, healthcare spending in the United States accounted for 17.6% of
+the national GDP, totaling approximately \$4.9 trillion. Despite this
+immense expenditure, millions of Americans continue to struggle with
+chronic diseases, and healthcare delivery remains highly fragmented.
+This inefficiency not only strains the system financially but also
+results in poorer outcomes for those who need care the most. One of the
+central challenges is the “hot spotters” problem—a small subset of
+patients who incur the highest costs often receive the least coordinated
+and least effective care. Understanding who these patients are, what
+conditions they have, and how their costs evolve over time is critical
+for developing targeted interventions that improve health outcomes while
+reducing unnecessary spending.
+
+## Study Purpose:
+
+This project aims to analyze the relationship between healthcare costs
+and medical conditions to uncover patterns among high-cost patients. By
+identifying key demographic and clinical characteristics associated with
+elevated healthcare spending, we can inform strategies for better
+resource allocation and more integrated models of care.
+
+## Methods:
+
+To achieve these goals, we conducted statistical analyses using
+patient-level cost and diagnosis data. We applied techniques such as
+regression modeling and clustering to detect trends and associations
+between chronic conditions and total healthcare expenditures.
+Additionally, we developed interactive visualizations and a web-based
+dashboard in R to make the results accessible for policy analysts,
+healthcare administrators, and researchers.
+
+## Expected Impact:
+
+Our findings will contribute to a deeper understanding of cost drivers
+within the healthcare system and support efforts to design value-based
+care models that prioritize prevention, care coordination, and
+patient-centered outcomes.

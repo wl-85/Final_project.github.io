@@ -1,14 +1,16 @@
 ---
 title: "P8105 Final Project Proposal"
 author: |
-  Team: 
-  Charline Gu (jg4891),  
-  Yaxuan Deng (yd2810),  
-  Yuanyuan Zhang (yz4982),  
+  Team:
+  Charline Gu (jg4891),
+  Yaxuan Deng (yd2810),
+  Yuanyuan Zhang (yz4982),
   Wen Li (wl3013)
 output:
-  github_document
+  github_document:
+    toc: false
 ---
+
 
 ## Objectives:
 Identify characteristics of patients who are both medically high-risk and financially costly.

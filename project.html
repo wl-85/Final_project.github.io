@@ -355,7 +355,6 @@ div.tocify {
 </div>
 
 
-<p>=======</p>
 <pre class="r"><code># 这个 chunk 只在 Console 手动跑一次就好，不要在 knit 的时候自动跑
 # devtools::install_github(&quot;e-mitchell/meps_r_pkg/MEPS&quot;)
 # library(MEPS)</code></pre>
@@ -376,11 +375,6 @@ summary(fyc23$totexp23)</code></pre>
 ## [19] &quot;age23x&quot;   &quot;marry23x&quot;</code></pre>
 <pre class="r"><code>nrow(fyc23) </code></pre>
 <pre><code>## [1] 18919</code></pre>
-<<<<<<< HEAD
-<p>Data cleaning</p>
-<pre class="r"><code># Key outcome variable in file &quot;h251&quot;
-# TOTEXP23</code></pre>
-=======
 <div id="data-clean" class="section level2">
 <h2>data clean</h2>
 <pre class="r"><code>fyc23_clean &lt;- fyc23
@@ -443,7 +437,7 @@ fyc23_clean$age_cat4 &lt;- factor(
   levels = c(&quot;0-17&quot;, &quot;18-44&quot;, &quot;45-64&quot;, &quot;65+&quot;)
 )
 
-# 2.3 性别：1=Male, 2=Female
+# 2.3 Gender: 1=Male, 2=Female
 fyc23_clean$sex_f[fyc23_clean$sex == 1] &lt;- &quot;Male&quot;
 fyc23_clean$sex_f[fyc23_clean$sex == 2] &lt;- &quot;Female&quot;
 fyc23_clean$sex_f &lt;- factor(
@@ -451,7 +445,7 @@ fyc23_clean$sex_f &lt;- factor(
   levels = c(&quot;Male&quot;, &quot;Female&quot;)
 )
 
-# 2.4 种族/族裔：NH White, NH Black, Hispanic, NH Asian/Other
+# 2.4 Race: NH White, NH Black, Hispanic, NH Asian/Other
 fyc23_clean$race4[fyc23_clean$racethx == 1] &lt;- &quot;Hispanic&quot;
 fyc23_clean$race4[fyc23_clean$racethx == 2] &lt;- &quot;NH White&quot;
 fyc23_clean$race4[fyc23_clean$racethx == 3] &lt;- &quot;NH Black&quot;
@@ -477,7 +471,7 @@ fyc23_clean$povcat_f &lt;- factor(
   labels = pov_labels
 )
 
-# 2.6 保险 INSCOV23 : 1 any private, 2 public only, 3 uninsured
+# 2.6 Insurance type (INSCOV23): 1 any private, 2 public only, 3 uninsured
 ins_labels &lt;- c(&quot;Any private&quot;, &quot;Public only&quot;, &quot;Uninsured&quot;)
 
 fyc23_clean$inscov_f &lt;- factor(
@@ -495,7 +489,7 @@ des23 &lt;- svydesign(
   nest   = TRUE
 )
 
-# 小检查:
+# Quick check
 svytable(~ age_cat4, des23)</code></pre>
 <pre><code>## age_cat4
 ##      0-17     18-44     45-64       65+ 
@@ -834,7 +828,6 @@ prop_exp</code></pre>
 <pre class="r"><code>sum(prop_exp)  # ≈ 1</code></pre>
 <pre><code>## [1] 1</code></pre>
 </div>
->>>>>>> 882d5ffb3359544fc30e233c68a695ff4ea26ea7
 
 
 
