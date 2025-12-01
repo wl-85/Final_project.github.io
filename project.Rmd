@@ -8,7 +8,7 @@ output:
 
 
 ```{r setup, include=FALSE}
-# 加载所有要用的包
+# Load in packages
 library(devtools)
 library(tidyverse)
 library(readr)
@@ -17,14 +17,14 @@ library(haven)
 library(survey)
 library(MEPS)
 
-# 读 2023 MEPS
+# Read "2023 MEPS" data
 # 2023 Full-Year Consolidated（HC-251）
 ## 人水平费用 + 人口学 + 抽样设计变量
 fyc23  <- read_MEPS(file = "h251")
 cond23 <- read_MEPS(file = "h249")
 
-## 读入 2023 Medical Conditions（HC-249）
-## 疾病 / CCSR
+## Read "2023 Medical Conditions" data（HC-249）
+## Diseases / CCSR
 names(fyc23)  <- tolower(names(fyc23))
 names(cond23) <- tolower(names(cond23))
 
@@ -39,16 +39,17 @@ des23 <- svydesign(
 
 
 ```{r}
-# 这个 chunk 只在 Console 手动跑一次就好，不要在 knit 的时候自动跑
+# This chunk only need to run in "Console" once, do not run when knitting the file
 # devtools::install_github("e-mitchell/meps_r_pkg/MEPS")
 # library(MEPS)
 ```
 
 
 ```{r}
-## 快速检查一下总费用变量（已经变成小写 totexp23）一致
+# Quick check of the total fee variable (totexp23)
 summary(fyc23$totexp23)
-names(fyc23)[1:30]              # 看看前几个变量名是否正确
+# check if the name of first few variables correct
+names(fyc23)[1:30]
 grep("23", names(fyc23), value = TRUE)[1:20]
 nrow(fyc23) 
 ```
@@ -57,10 +58,10 @@ nrow(fyc23)
 ```{r}
 fyc23_clean <- fyc23
 
-# 只保留有正权重的人
+# Only keep the individuals with positive weight
 fyc23_clean <- fyc23_clean[fyc23_clean$perwt23f > 0, ]
 
-# 把所有数值变量里的特殊缺失码(-1, -7, -8, -9, -15)改成 NA
+# Change all the missing value (-1, -7, -8, -9, -15) into NA
 num_vars <- sapply(fyc23_clean, is.numeric)
 
 for (j in which(num_vars)) {
@@ -69,17 +70,17 @@ for (j in which(num_vars)) {
   fyc23_clean[[j]] <- x
 }
 
-# 只保留本项目要用到的变量（后面可再扩展）
+# Only keep the variables needed for this project (could extend later)
 keep_vars <- c(
   "dupersid", "panel", "varstr", "varpsu", "perwt23f",
-  "totexp23",           # 总费用
+  "totexp23",           # Total fee
   "agelast", "sex", "racethx",
   "povcat23", "inscov23"
 )
 
 fyc23_clean <- fyc23_clean[ , keep_vars]
 
-# 用清理后的数据重新建 survey design
+# Use cleaned data to rebuild "survey design"
 des23 <- svydesign(
   ids    = ~varpsu,
   strata = ~varstr,
@@ -91,9 +92,9 @@ des23 <- svydesign(
 ```
 
 
-## 构造人群特征变量
+## Demografic variables
 ```{r}
-# 2.1 先创建空的新变量列
+# 2.1 Build blank variable columns
 
 fyc23_clean$age_cat4  <- NA
 fyc23_clean$sex_f     <- NA
@@ -101,7 +102,7 @@ fyc23_clean$race4     <- NA
 fyc23_clean$povcat_f  <- NA
 fyc23_clean$inscov_f  <- NA
 
-# 2.2 年龄分组：0–17, 18–44, 45–64, 65+
+# 2.2 Age groups：0–17, 18–44, 45–64, 65+
 fyc23_clean$age_cat4[fyc23_clean$agelast <= 17] <-
   "0-17"
 fyc23_clean$age_cat4[fyc23_clean$agelast >= 18 &
@@ -137,9 +138,9 @@ fyc23_clean$race4 <- factor(
   levels = c("NH White", "NH Black", "Hispanic", "NH Asian/Other")
 )
 
-# 2.5 贫困线分组 POVCAT23 : 1–5
-# MEPS 里的 High income = 家庭收入 ≥ 4 倍联邦贫困线，
-#不是什么 “top 1% / top 10% 超富”，而是“中产及以上的大块人群”。
+# 2.5 Poverty line groups (POVCAT23): 1–5
+# In MEPS, High income = House income ≥ 4 times federal poverty line,
+# not “top 1% / top 10% super rich”, but the population of middle-class and above
 
 pov_labels <- c(
   "Poor", "Near-poor", "Low income",
@@ -161,7 +162,7 @@ fyc23_clean$inscov_f <- factor(
   labels = ins_labels
 )
 
-# 2.7 再用更新后的数据重建 design
+# 2.7 Use updated data to rebuild "design"
 des23 <- svydesign(
   ids    = ~varpsu,
   strata = ~varstr,
