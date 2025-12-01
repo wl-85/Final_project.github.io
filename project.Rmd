@@ -19,7 +19,7 @@ library(MEPS)
 
 # Read "2023 MEPS" data
 # 2023 Full-Year Consolidated（HC-251）
-## 人水平费用 + 人口学 + 抽样设计变量
+## Personnel expenses + Demographics + Sampling design variables
 fyc23  <- read_MEPS(file = "h251")
 cond23 <- read_MEPS(file = "h249")
 
@@ -180,10 +180,10 @@ svytable(~ inscov_f, des23)
 ```
 
 ```{r}
-# 看 agelast 和 age_cat4 的对应关系
+# Explore the relationship between "agelast" and "age_cat4"
 table(fyc23_clean$age_cat4, useNA = "ifany")
 
-# 对每个年龄组，分别看年龄的最小 / 最大值
+# For each age group, check the minimum/ maximum
 tapply(
   fyc23_clean$agelast,
   fyc23_clean$age_cat4,
@@ -201,11 +201,11 @@ table(fyc23_clean$inscov23, fyc23_clean$inscov_f, useNA = "ifany")
 
 ```
 
-定义 Top 1%、Top 5%、Top 10%、Bottom 50%
+Define Top 1%、Top 5%、Top 10%、Bottom 50%
 ```{r}
-# 先算 TOTEXP23 的加权分位数
+# Calculate the weighted quantile of "TOTEXP23"
 
-# 3.1 计算加权分位数
+# 3.1 Calculate weighted quantile
 exp_cuts <- svyquantile(
   ~ totexp23,
   design    = des23,
@@ -213,7 +213,7 @@ exp_cuts <- svyquantile(
   ci        = FALSE
 )
 
-exp_cuts   # knit 时 check
+exp_cuts   # check it when knitting
 str(exp_cuts)
 ```
 
@@ -221,13 +221,13 @@ str(exp_cuts)
 ```{r}
 q_vec <- as.numeric(exp_cuts$totexp23)
 
-# 对应顺序：0.50, 0.90, 0.95, 0.99
+# quantile of: 0.50, 0.90, 0.95, 0.99
 p50 <- q_vec[1]  # 0.5 分位数
 p90 <- q_vec[2]  # 0.9
 p95 <- q_vec[3]  # 0.95
 p99 <- q_vec[4]  # 0.99
 
-# 新建 exp_group 变量
+# Create variable "exp_group"
 fyc23_clean$exp_group <- NA
 
 fyc23_clean$exp_group[fyc23_clean$totexp23 >= p99] <- "Top 1%"
@@ -248,7 +248,7 @@ fyc23_clean$exp_group <- factor(
   levels = c("Bottom 50%", "50–90%", "Top 10%", "Top 5%", "Top 1%")
 )
 
-# 用带 exp_group 的数据重建 design
+# Use data with "exp_group" to rebuild "design"
 des23 <- svydesign(
   ids    = ~varpsu,
   strata = ~varstr,
@@ -257,18 +257,18 @@ des23 <- svydesign(
   nest   = TRUE
 )
 
-# 检查各花费组的加权人数和比例
+# Check the weighted number and proportion of people in each expense category
 svytable(~ exp_group, des23)
 svytable(~ exp_group, des23) / sum(weights(des23))
 
 ```
 
-## 处理cond23数据
+## Handle the data of "cond23"
 ```{r}
-# 从 cond23 复制一份
+# A copy from "cond23"
 cond23_clean <- cond23
 
-# 数值型：特殊缺失码 -> NA
+# Numeric variable: missing value -> NA
 num_vars_c <- sapply(cond23_clean, is.numeric)
 
 for (j in which(num_vars_c)) {
@@ -277,17 +277,17 @@ for (j in which(num_vars_c)) {
   cond23_clean[[j]] <- x
 }
 
-# CCSR 字段是字符型，列名一般是 ccsr1x, ccsr2x, ccsr3x, ccsr4x
+# CCSR (characteristic), column names are: ccsr1x, ccsr2x, ccsr3x, ccsr4x
 ccsr_cols <- grep("^ccsr", names(cond23_clean), value = TRUE)
 
 for (nm in ccsr_cols) {
   x <- cond23_clean[[nm]]
-  # 有些文件里缺失用 "-1" 或 "-15"
+  # Some files using "-1" or "-15" as missing value
   x[x %in% c("-1", "-15")] <- NA
   cond23_clean[[nm]] <- x
 }
 
-# 主 CCSR：优先用 ccsr1x，缺失再用2/3/4
+# Main CCSR: use "ccsr1x" first, use 2/3/4 when data missing
 cond23_clean$ccsr_main <- cond23_clean$ccsr1x
 
 idx_na <- is.na(cond23_clean$ccsr_main) & !is.na(cond23_clean$ccsr2x)
@@ -299,10 +299,10 @@ cond23_clean$ccsr_main[idx_na] <- cond23_clean$ccsr3x[idx_na]
 idx_na <- is.na(cond23_clean$ccsr_main) & !is.na(cond23_clean$ccsr4x)
 cond23_clean$ccsr_main[idx_na] <- cond23_clean$ccsr4x[idx_na]
 
-# 只保留主 CCSR 不缺失的记录
+# Only keep the record of the main CCSR is not missing
 cond23_clean <- cond23_clean[!is.na(cond23_clean$ccsr_main), ]
 
-# 只保留后续一定会用到的变量
+# Only keep the variables that will be used later
 keep_cond_vars <- c(
   "dupersid", "condidx",
   "varstr", "varpsu", "perwt23f",
@@ -311,25 +311,25 @@ keep_cond_vars <- c(
 
 cond23_clean <- cond23_clean[ , keep_cond_vars]
 
-# 看最常见的前 10 个 CCSR
+# Check the first 10 CCSR
 head( sort(table(cond23_clean$ccsr_main), decreasing = TRUE), 10 )
 ```
 
 
 ## double check
 ```{r}
-## 1. 计算 survey 设计下的“总人口”
+## 1. Calculate the "Total population" under the survey design
 total_pop <- sum(weights(des23))
 total_pop
-# 看看大概是多少，应该在 3亿多 这个数量级
+# Supposed to around the magnitude of 300 million
 
-## 2. 各个变量的加权频数
+## 2. The weighted frequency of each variable
 tab_age   <- svytable(~ age_cat4,  des23)
 tab_race  <- svytable(~ race4,     des23)
 tab_pov   <- svytable(~ povcat_f,  des23)
 tab_ins   <- svytable(~ inscov_f,  des23)
 
-## 3. 各个变量加权和，应该都 ≈ total_pop
+## 3. The weighted sum of each variable, should be around total_pop
 sum_age  <- sum(tab_age)
 sum_race <- sum(tab_race)
 sum_pov  <- sum(tab_pov)
@@ -344,6 +344,7 @@ c(
 )
 
 ## 4. 看差值（应该非常接近 0，只是小的四舍五入误差）
+## 4. Check the difference (should be close to 0, or with small rounding error)
 c(
   age_minus_total  = sum_age  - total_pop,
   race_minus_total = sum_race - total_pop,
@@ -354,25 +355,25 @@ c(
 ```
 
 ```{r}
-## 年龄分布：加权频数 + 比例
+## Age distribution: weighted frequency + proportion
 tab_age
 prop_age <- prop.table(tab_age)
 prop_age
-sum(prop_age)  # 应该 ≈ 1
+sum(prop_age)  # should ≈ 1
 
-## 种族/族裔分布
+## Race distribution
 tab_race
 prop_race <- prop.table(tab_race)
 prop_race
 sum(prop_race)  # ≈ 1
 
-## 贫困线分布
+## Poverty line distribution
 tab_pov
 prop_pov <- prop.table(tab_pov)
 prop_pov
 sum(prop_pov)  # ≈ 1
 
-## 保险分布
+## Insurance distribution
 tab_ins
 prop_ins <- prop.table(tab_ins)
 prop_ins
@@ -380,10 +381,10 @@ sum(prop_ins)  # ≈ 1
 ```
 
 ```{r}
-## 看每个年龄组的样本数量（未加权）
+## Check the sample number of each age group (non-weighted)
 table(fyc23_clean$age_cat4, useNA = "ifany")
 
-## 看每个年龄组里的 agelast 最小值 / 最大值
+## Check the minimum/maximum of "agelast" in each age group
 tapply(
   fyc23_clean$agelast,
   fyc23_clean$age_cat4,
@@ -392,7 +393,7 @@ tapply(
 ```
 
 ```{r}
-## racethx -> race4 映射表
+## racethx -> race4, mapping table
 table(fyc23_clean$racethx, fyc23_clean$race4, useNA = "ifany")
 
 ## povcat23 -> povcat_f
@@ -404,11 +405,11 @@ table(fyc23_clean$inscov23, fyc23_clean$inscov_f, useNA = "ifany")
 ```
 
 ```{r}
-## 花费分组的加权频数
+## Weighted frequency of expense groups
 tab_exp <- svytable(~ exp_group, des23)
 tab_exp
 
-## 花费分组的加权比例
+## Weighted proportion of expense groups
 prop_exp <- prop.table(tab_exp)
 prop_exp
 sum(prop_exp)  # ≈ 1
