@@ -6,9 +6,7 @@ author: |
   Yaxuan Deng (yd2810),
   Yuanyuan Zhang (yz4982),
   Wen Li (wl3013)
-output:
-  github_document:
-    toc: false
+output: html_document
 ---
 
 
