@@ -343,7 +343,6 @@ c(
   sum_ins   = sum_ins
 )
 
-## 4. 看差值（应该非常接近 0，只是小的四舍五入误差）
 ## 4. Check the difference (should be close to 0, or with small rounding error)
 c(
   age_minus_total  = sum_age  - total_pop,
