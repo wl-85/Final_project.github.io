@@ -3,3 +3,112 @@ title: "Reprot"
 output: html_document
 ---
 
+
+
+
+
+## Demographic Information
+```{r setup, include=FALSE}
+# Load in packages
+library(devtools)
+library(tidyverse)
+library(readr)
+library(readxl)
+library(haven)
+library(survey)
+library(MEPS)
+library(knitr)
+
+# Read "2023 MEPS" data
+# 2023 Full-Year Consolidated（HC-251）
+## Personnel expenses + Demographics + Sampling design variables
+fyc23  <- read_MEPS(file = "h251")
+cond23 <- read_MEPS(file = "h249")
+
+## Read "2023 Medical Conditions" data（HC-249）
+## Diseases / CCSR
+names(fyc23)  <- tolower(names(fyc23))
+names(cond23) <- tolower(names(cond23))
+
+des23 <- svydesign(
+  ids    = ~varpsu,
+  strata = ~varstr,
+  weights= ~perwt23f,
+  data   = fyc23,
+  nest   = TRUE
+)
+
+fyc23_clean <- fyc23
+
+# Only keep the individuals with positive weight
+fyc23_clean <- fyc23_clean[fyc23_clean$perwt23f > 0, ]
+
+# Change all the missing value (-1, -7, -8, -9, -15) into NA
+num_vars <- sapply(fyc23_clean, is.numeric)
+
+for (j in which(num_vars)) {
+  x <- fyc23_clean[[j]]
+  x[x %in% c(-1, -7, -8, -9, -15)] <- NA
+  fyc23_clean[[j]] <- x
+}
+
+# Only keep the variables needed for this project (could extend later)
+keep_vars <- c(
+  "dupersid", "panel", "varstr", "varpsu", "perwt23f",
+  "totexp23",           # Total fee
+  "agelast", "sex", "racethx",
+  "povcat23", "inscov23"
+)
+
+fyc23_clean <- fyc23_clean[ , keep_vars]
+
+# Use cleaned data to rebuild "survey design"
+des23 <- svydesign(
+  ids    = ~varpsu,
+  strata = ~varstr,
+  weights= ~perwt23f,
+  data   = fyc23_clean,
+  nest   = TRUE
+)
+
+fyc23_clean$age_cat4  <- NA
+fyc23_clean$sex_f     <- NA
+fyc23_clean$race4     <- NA
+fyc23_clean$povcat_f  <- NA
+fyc23_clean$inscov_f  <- NA
+```
+
+```{r include=FALSE}
+# 2.2 Age groups：0–17, 18–44, 45–64, 65+
+fyc23_clean$age_cat4[fyc23_clean$agelast <= 17] <-
+  "0-17"
+fyc23_clean$age_cat4[fyc23_clean$agelast >= 18 &
+                     fyc23_clean$agelast <= 44] <-
+  "18-44"
+fyc23_clean$age_cat4[fyc23_clean$agelast >= 45 &
+                     fyc23_clean$agelast <= 64] <-
+  "45-64"
+fyc23_clean$age_cat4[fyc23_clean$agelast >= 65] <-
+  "65+"
+
+fyc23_clean$age_cat4 <- factor(
+  fyc23_clean$age_cat4,
+  levels = c("0-17", "18-44", "45-64", "65+")
+)
+```
+
+From the 
+
+```{r echo=FALSE}
+fyc23_clean %>%
+  count(age_cat4) %>%
+  rename(`Age Category` = age_cat4) %>%
+  mutate(percent = round(n / sum(n) * 100, 1)) %>%
+  bind_rows(
+    summarize(., `Age Category` = "Total",
+                 n = sum(n),
+                 percent = round(sum(n) / sum(n) * 100, 1))
+  ) %>%
+  kable()
+```
+
