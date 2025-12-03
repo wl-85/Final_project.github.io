@@ -355,14 +355,15 @@ div.tocify {
 </div>
 
 
-<pre class="r"><code># 这个 chunk 只在 Console 手动跑一次就好，不要在 knit 的时候自动跑
+<pre class="r"><code># This chunk only need to run in &quot;Console&quot; once, do not run when knitting the file
 # devtools::install_github(&quot;e-mitchell/meps_r_pkg/MEPS&quot;)
 # library(MEPS)</code></pre>
-<pre class="r"><code>## 快速检查一下总费用变量（已经变成小写 totexp23）一致
+<pre class="r"><code># Quick check of the total fee variable (totexp23)
 summary(fyc23$totexp23)</code></pre>
 <pre><code>##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
 ##      0.0    299.5   1816.0   8422.0   7087.0 574675.0</code></pre>
-<pre class="r"><code>names(fyc23)[1:30]              # 看看前几个变量名是否正确</code></pre>
+<pre class="r"><code># check if the name of first few variables correct
+names(fyc23)[1:30]</code></pre>
 <pre><code>##  [1] &quot;duid&quot;     &quot;pid&quot;      &quot;dupersid&quot; &quot;panel&quot;    &quot;datayear&quot; &quot;famid31&quot; 
 ##  [7] &quot;famid42&quot;  &quot;famid53&quot;  &quot;famid23&quot;  &quot;famidyr&quot;  &quot;cpsfamid&quot; &quot;fcsz1231&quot;
 ## [13] &quot;fcrp1231&quot; &quot;ruletr31&quot; &quot;ruletr42&quot; &quot;ruletr53&quot; &quot;ruletr23&quot; &quot;rusize31&quot;
@@ -379,10 +380,10 @@ summary(fyc23$totexp23)</code></pre>
 <h2>data clean</h2>
 <pre class="r"><code>fyc23_clean &lt;- fyc23
 
-# 只保留有正权重的人
+# Only keep the individuals with positive weight
 fyc23_clean &lt;- fyc23_clean[fyc23_clean$perwt23f &gt; 0, ]
 
-# 把所有数值变量里的特殊缺失码(-1, -7, -8, -9, -15)改成 NA
+# Change all the missing value (-1, -7, -8, -9, -15) into NA
 num_vars &lt;- sapply(fyc23_clean, is.numeric)
 
 for (j in which(num_vars)) {
@@ -391,17 +392,17 @@ for (j in which(num_vars)) {
   fyc23_clean[[j]] &lt;- x
 }
 
-# 只保留本项目要用到的变量（后面可再扩展）
+# Only keep the variables needed for this project (could extend later)
 keep_vars &lt;- c(
   &quot;dupersid&quot;, &quot;panel&quot;, &quot;varstr&quot;, &quot;varpsu&quot;, &quot;perwt23f&quot;,
-  &quot;totexp23&quot;,           # 总费用
+  &quot;totexp23&quot;,           # Total fee
   &quot;agelast&quot;, &quot;sex&quot;, &quot;racethx&quot;,
   &quot;povcat23&quot;, &quot;inscov23&quot;
 )
 
 fyc23_clean &lt;- fyc23_clean[ , keep_vars]
 
-# 用清理后的数据重新建 survey design
+# Use cleaned data to rebuild &quot;survey design&quot;
 des23 &lt;- svydesign(
   ids    = ~varpsu,
   strata = ~varstr,
@@ -410,9 +411,9 @@ des23 &lt;- svydesign(
   nest   = TRUE
 )</code></pre>
 </div>
-<div id="构造人群特征变量" class="section level2">
-<h2>构造人群特征变量</h2>
-<pre class="r"><code># 2.1 先创建空的新变量列
+<div id="demografic-variables" class="section level2">
+<h2>Demografic variables</h2>
+<pre class="r"><code># 2.1 Build blank variable columns
 
 fyc23_clean$age_cat4  &lt;- NA
 fyc23_clean$sex_f     &lt;- NA
@@ -420,7 +421,7 @@ fyc23_clean$race4     &lt;- NA
 fyc23_clean$povcat_f  &lt;- NA
 fyc23_clean$inscov_f  &lt;- NA
 
-# 2.2 年龄分组：0–17, 18–44, 45–64, 65+
+# 2.2 Age groups：0–17, 18–44, 45–64, 65+
 fyc23_clean$age_cat4[fyc23_clean$agelast &lt;= 17] &lt;-
   &quot;0-17&quot;
 fyc23_clean$age_cat4[fyc23_clean$agelast &gt;= 18 &amp;
@@ -456,9 +457,9 @@ fyc23_clean$race4 &lt;- factor(
   levels = c(&quot;NH White&quot;, &quot;NH Black&quot;, &quot;Hispanic&quot;, &quot;NH Asian/Other&quot;)
 )
 
-# 2.5 贫困线分组 POVCAT23 : 1–5
-# MEPS 里的 High income = 家庭收入 ≥ 4 倍联邦贫困线，
-#不是什么 “top 1% / top 10% 超富”，而是“中产及以上的大块人群”。
+# 2.5 Poverty line groups (POVCAT23): 1–5
+# In MEPS, High income = House income ≥ 4 times federal poverty line,
+# not “top 1% / top 10% super rich”, but the population of middle-class and above
 
 pov_labels &lt;- c(
   &quot;Poor&quot;, &quot;Near-poor&quot;, &quot;Low income&quot;,
@@ -480,7 +481,7 @@ fyc23_clean$inscov_f &lt;- factor(
   labels = ins_labels
 )
 
-# 2.7 再用更新后的数据重建 design
+# 2.7 Use updated data to rebuild &quot;design&quot;
 des23 &lt;- svydesign(
   ids    = ~varpsu,
   strata = ~varstr,
@@ -506,12 +507,12 @@ svytable(~ age_cat4, des23)</code></pre>
 <pre><code>## inscov_f
 ## Any private Public only   Uninsured 
 ##   215911541    97419962    21198770</code></pre>
-<pre class="r"><code># 看 agelast 和 age_cat4 的对应关系
+<pre class="r"><code># Explore the relationship between &quot;agelast&quot; and &quot;age_cat4&quot;
 table(fyc23_clean$age_cat4, useNA = &quot;ifany&quot;)</code></pre>
 <pre><code>## 
 ##  0-17 18-44 45-64   65+ 
 ##  3556  5543  4756  4608</code></pre>
-<pre class="r"><code># 对每个年龄组，分别看年龄的最小 / 最大值
+<pre class="r"><code># For each age group, check the minimum/ maximum
 tapply(
   fyc23_clean$agelast,
   fyc23_clean$age_cat4,
@@ -550,10 +551,10 @@ tapply(
 ##   1       10833           0         0
 ##   2           0        6431         0
 ##   3           0           0      1199</code></pre>
-<p>定义 Top 1%、Top 5%、Top 10%、Bottom 50%</p>
-<pre class="r"><code># 先算 TOTEXP23 的加权分位数
+<p>Define Top 1%、Top 5%、Top 10%、Bottom 50%</p>
+<pre class="r"><code># Calculate the weighted quantile of &quot;TOTEXP23&quot;
 
-# 3.1 计算加权分位数
+# 3.1 Calculate weighted quantile
 exp_cuts &lt;- svyquantile(
   ~ totexp23,
   design    = des23,
@@ -561,7 +562,7 @@ exp_cuts &lt;- svyquantile(
   ci        = FALSE
 )
 
-exp_cuts   # knit 时 check</code></pre>
+exp_cuts   # check it when knitting</code></pre>
 <pre><code>## $totexp23
 ##       0.5   0.9  0.95  0.99
 ## [1,] 1583 18330 34150 93443
@@ -580,13 +581,13 @@ exp_cuts   # knit 时 check</code></pre>
 ##  - attr(*, &quot;class&quot;)= chr &quot;newsvyquantile&quot;</code></pre>
 <pre class="r"><code>q_vec &lt;- as.numeric(exp_cuts$totexp23)
 
-# 对应顺序：0.50, 0.90, 0.95, 0.99
+# quantile of: 0.50, 0.90, 0.95, 0.99
 p50 &lt;- q_vec[1]  # 0.5 分位数
 p90 &lt;- q_vec[2]  # 0.9
 p95 &lt;- q_vec[3]  # 0.95
 p99 &lt;- q_vec[4]  # 0.99
 
-# 新建 exp_group 变量
+# Create variable &quot;exp_group&quot;
 fyc23_clean$exp_group &lt;- NA
 
 fyc23_clean$exp_group[fyc23_clean$totexp23 &gt;= p99] &lt;- &quot;Top 1%&quot;
@@ -607,7 +608,7 @@ fyc23_clean$exp_group &lt;- factor(
   levels = c(&quot;Bottom 50%&quot;, &quot;50–90%&quot;, &quot;Top 10%&quot;, &quot;Top 5%&quot;, &quot;Top 1%&quot;)
 )
 
-# 用带 exp_group 的数据重建 design
+# Use data with &quot;exp_group&quot; to rebuild &quot;design&quot;
 des23 &lt;- svydesign(
   ids    = ~varpsu,
   strata = ~varstr,
@@ -616,7 +617,7 @@ des23 &lt;- svydesign(
   nest   = TRUE
 )
 
-# 检查各花费组的加权人数和比例
+# Check the weighted number and proportion of people in each expense category
 svytable(~ exp_group, des23)</code></pre>
 <pre><code>## exp_group
 ## Bottom 50%     50–90%    Top 10%     Top 5%     Top 1% 
@@ -626,12 +627,12 @@ svytable(~ exp_group, des23)</code></pre>
 ## Bottom 50%     50–90%    Top 10%     Top 5%     Top 1% 
 ## 0.50001981 0.39996996 0.04998330 0.03996387 0.01006306</code></pre>
 </div>
-<div id="处理cond23数据" class="section level2">
-<h2>处理cond23数据</h2>
-<pre class="r"><code># 从 cond23 复制一份
+<div id="handle-the-data-of-cond23" class="section level2">
+<h2>Handle the data of “cond23”</h2>
+<pre class="r"><code># A copy from &quot;cond23&quot;
 cond23_clean &lt;- cond23
 
-# 数值型：特殊缺失码 -&gt; NA
+# Numeric variable: missing value -&gt; NA
 num_vars_c &lt;- sapply(cond23_clean, is.numeric)
 
 for (j in which(num_vars_c)) {
@@ -640,17 +641,17 @@ for (j in which(num_vars_c)) {
   cond23_clean[[j]] &lt;- x
 }
 
-# CCSR 字段是字符型，列名一般是 ccsr1x, ccsr2x, ccsr3x, ccsr4x
+# CCSR (characteristic), column names are: ccsr1x, ccsr2x, ccsr3x, ccsr4x
 ccsr_cols &lt;- grep(&quot;^ccsr&quot;, names(cond23_clean), value = TRUE)
 
 for (nm in ccsr_cols) {
   x &lt;- cond23_clean[[nm]]
-  # 有些文件里缺失用 &quot;-1&quot; 或 &quot;-15&quot;
+  # Some files using &quot;-1&quot; or &quot;-15&quot; as missing value
   x[x %in% c(&quot;-1&quot;, &quot;-15&quot;)] &lt;- NA
   cond23_clean[[nm]] &lt;- x
 }
 
-# 主 CCSR：优先用 ccsr1x，缺失再用2/3/4
+# Main CCSR: use &quot;ccsr1x&quot; first, use 2/3/4 when data missing
 cond23_clean$ccsr_main &lt;- cond23_clean$ccsr1x
 
 idx_na &lt;- is.na(cond23_clean$ccsr_main) &amp; !is.na(cond23_clean$ccsr2x)
@@ -662,10 +663,10 @@ cond23_clean$ccsr_main[idx_na] &lt;- cond23_clean$ccsr3x[idx_na]
 idx_na &lt;- is.na(cond23_clean$ccsr_main) &amp; !is.na(cond23_clean$ccsr4x)
 cond23_clean$ccsr_main[idx_na] &lt;- cond23_clean$ccsr4x[idx_na]
 
-# 只保留主 CCSR 不缺失的记录
+# Only keep the record of the main CCSR is not missing
 cond23_clean &lt;- cond23_clean[!is.na(cond23_clean$ccsr_main), ]
 
-# 只保留后续一定会用到的变量
+# Only keep the variables that will be used later
 keep_cond_vars &lt;- c(
   &quot;dupersid&quot;, &quot;condidx&quot;,
   &quot;varstr&quot;, &quot;varpsu&quot;, &quot;perwt23f&quot;,
@@ -674,7 +675,7 @@ keep_cond_vars &lt;- c(
 
 cond23_clean &lt;- cond23_clean[ , keep_cond_vars]
 
-# 看最常见的前 10 个 CCSR
+# Check the first 10 CCSR
 head( sort(table(cond23_clean$ccsr_main), decreasing = TRUE), 10 )</code></pre>
 <pre><code>## 
 ## CIR007 END010 MUS010 END002 MBD005 MBD002 END001 MUS006 DIG004 RSP009 
@@ -682,19 +683,19 @@ head( sort(table(cond23_clean$ccsr_main), decreasing = TRUE), 10 )</code></pre>
 </div>
 <div id="double-check" class="section level2">
 <h2>double check</h2>
-<pre class="r"><code>## 1. 计算 survey 设计下的“总人口”
+<pre class="r"><code>## 1. Calculate the &quot;Total population&quot; under the survey design
 total_pop &lt;- sum(weights(des23))
 total_pop</code></pre>
 <pre><code>## [1] 334530273</code></pre>
-<pre class="r"><code># 看看大概是多少，应该在 3亿多 这个数量级
+<pre class="r"><code># Supposed to around the magnitude of 300 million
 
-## 2. 各个变量的加权频数
+## 2. The weighted frequency of each variable
 tab_age   &lt;- svytable(~ age_cat4,  des23)
 tab_race  &lt;- svytable(~ race4,     des23)
 tab_pov   &lt;- svytable(~ povcat_f,  des23)
 tab_ins   &lt;- svytable(~ inscov_f,  des23)
 
-## 3. 各个变量加权和，应该都 ≈ total_pop
+## 3. The weighted sum of each variable, should be around total_pop
 sum_age  &lt;- sum(tab_age)
 sum_race &lt;- sum(tab_race)
 sum_pov  &lt;- sum(tab_pov)
@@ -710,6 +711,7 @@ c(
 <pre><code>## total_pop   sum_age  sum_race   sum_pov   sum_ins 
 ## 334530273 334530273 334530273 334530273 334530273</code></pre>
 <pre class="r"><code>## 4. 看差值（应该非常接近 0，只是小的四舍五入误差）
+## 4. Check the difference (should be close to 0, or with small rounding error)
 c(
   age_minus_total  = sum_age  - total_pop,
   race_minus_total = sum_race - total_pop,
@@ -718,7 +720,7 @@ c(
 )</code></pre>
 <pre><code>##  age_minus_total race_minus_total  pov_minus_total  ins_minus_total 
 ##                0                0                0                0</code></pre>
-<pre class="r"><code>## 年龄分布：加权频数 + 比例
+<pre class="r"><code>## Age distribution: weighted frequency + proportion
 tab_age</code></pre>
 <pre><code>## age_cat4
 ##      0-17     18-44     45-64       65+ 
@@ -728,9 +730,9 @@ prop_age</code></pre>
 <pre><code>## age_cat4
 ##      0-17     18-44     45-64       65+ 
 ## 0.2161564 0.3554158 0.2443307 0.1840970</code></pre>
-<pre class="r"><code>sum(prop_age)  # 应该 ≈ 1</code></pre>
+<pre class="r"><code>sum(prop_age)  # should ≈ 1</code></pre>
 <pre><code>## [1] 1</code></pre>
-<pre class="r"><code>## 种族/族裔分布
+<pre class="r"><code>## Race distribution
 tab_race</code></pre>
 <pre><code>## race4
 ##       NH White       NH Black       Hispanic NH Asian/Other 
@@ -742,7 +744,7 @@ prop_race</code></pre>
 ##      0.5736532      0.1251942      0.1965713      0.1045814</code></pre>
 <pre class="r"><code>sum(prop_race)  # ≈ 1</code></pre>
 <pre><code>## [1] 1</code></pre>
-<pre class="r"><code>## 贫困线分布
+<pre class="r"><code>## Poverty line distribution
 tab_pov</code></pre>
 <pre><code>## povcat_f
 ##          Poor     Near-poor    Low income Middle income   High income 
@@ -754,7 +756,7 @@ prop_pov</code></pre>
 ##    0.11085731    0.03814266    0.12099609    0.28732553    0.44267841</code></pre>
 <pre class="r"><code>sum(prop_pov)  # ≈ 1</code></pre>
 <pre><code>## [1] 1</code></pre>
-<pre class="r"><code>## 保险分布
+<pre class="r"><code>## Insurance distribution
 tab_ins</code></pre>
 <pre><code>## inscov_f
 ## Any private Public only   Uninsured 
@@ -766,12 +768,12 @@ prop_ins</code></pre>
 ##  0.64541705  0.29121419  0.06336876</code></pre>
 <pre class="r"><code>sum(prop_ins)  # ≈ 1</code></pre>
 <pre><code>## [1] 1</code></pre>
-<pre class="r"><code>## 看每个年龄组的样本数量（未加权）
+<pre class="r"><code>## Check the sample number of each age group (non-weighted)
 table(fyc23_clean$age_cat4, useNA = &quot;ifany&quot;)</code></pre>
 <pre><code>## 
 ##  0-17 18-44 45-64   65+ 
 ##  3556  5543  4756  4608</code></pre>
-<pre class="r"><code>## 看每个年龄组里的 agelast 最小值 / 最大值
+<pre class="r"><code>## Check the minimum/maximum of &quot;agelast&quot; in each age group
 tapply(
   fyc23_clean$agelast,
   fyc23_clean$age_cat4,
@@ -788,7 +790,7 @@ tapply(
 ## 
 ## $`65+`
 ## [1] 65 85</code></pre>
-<pre class="r"><code>## racethx -&gt; race4 映射表
+<pre class="r"><code>## racethx -&gt; race4, mapping table
 table(fyc23_clean$racethx, fyc23_clean$race4, useNA = &quot;ifany&quot;)</code></pre>
 <pre><code>##    
 ##     NH White NH Black Hispanic NH Asian/Other
@@ -813,13 +815,13 @@ table(fyc23_clean$inscov23, fyc23_clean$inscov_f, useNA = &quot;ifany&quot;)</co
 ##   1       10833           0         0
 ##   2           0        6431         0
 ##   3           0           0      1199</code></pre>
-<pre class="r"><code>## 花费分组的加权频数
+<pre class="r"><code>## Weighted frequency of expense groups
 tab_exp &lt;- svytable(~ exp_group, des23)
 tab_exp</code></pre>
 <pre><code>## exp_group
 ## Bottom 50%     50–90%    Top 10%     Top 5%     Top 1% 
 ##  167271763  133802060   16720928   13369123    3366399</code></pre>
-<pre class="r"><code>## 花费分组的加权比例
+<pre class="r"><code>## Weighted proportion of expense groups
 prop_exp &lt;- prop.table(tab_exp)
 prop_exp</code></pre>
 <pre><code>## exp_group

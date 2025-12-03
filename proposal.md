@@ -1,9 +1,7 @@
 P8105 Final Project Proposal
 ================
-Team: Charline Gu (jg4891),  
-Yaxuan Deng (yd2810),  
-Yuanyuan Zhang (yz4982),  
-Wen Li (wl3013)
+Team: Charline Gu (jg4891), Yaxuan Deng (yd2810), Yuanyuan Zhang
+(yz4982), Wen Li (wl3013)
 
 ## Objectives:
 
