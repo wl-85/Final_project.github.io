@@ -7,6 +7,10 @@ output: html_document
 
 
 
+
+
+
+
 ## Demographic Information
 ```{r setup, include=FALSE}
 # Load in packages
@@ -111,4 +115,7 @@ fyc23_clean %>%
   ) %>%
   kable()
 ```
+
+
+
 
