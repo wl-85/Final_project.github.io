@@ -230,7 +230,12 @@ Quick links
     <i class="fa-regular fa-file-lines"></i>
     Study aims, background & methods
   </a>
-
+  
+   <a class="quick-link-btn" href="report.html">
+    <i class="fa-regular fa-file-lines"></i>
+    Full Report
+  </a>
+  
   <a class="quick-link-btn" href="team.html">
     <i class="fa-regular fa-user-group"></i>
     Meet the team
