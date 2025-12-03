@@ -9,7 +9,7 @@ navbar:
       href: proposal.html
     - text: "Code & Results"
       href: project.html
-    - text: "Reprot"
+    - text: "Report"
       href: Report.html
     - text: "Team"
       href: team.html

@@ -1,5 +1,5 @@
 ---
-title: "Reprot"
+title: "Report"
 output: html_document
 ---
 
@@ -101,7 +101,7 @@ fyc23_clean$age_cat4 <- factor(
 )
 ```
 
-From the 
+From the age distribution, we can tell that
 
 ```{r echo=FALSE}
 fyc23_clean %>%
@@ -116,6 +116,53 @@ fyc23_clean %>%
   kable()
 ```
 
+```{r include=FALSE}
+fyc23_clean$sex_f[fyc23_clean$sex == 1] <- "Male"
+fyc23_clean$sex_f[fyc23_clean$sex == 2] <- "Female"
+fyc23_clean$sex_f <- factor(
+  fyc23_clean$sex_f,
+  levels = c("Male", "Female")
+)
+```
 
+We can see that 8783 individuals are male and 9680 individuals are female.
+```{r echo=FALSE}
+fyc23_clean %>%
+  count(sex_f) %>%
+  rename(`Sex` = sex_f) %>%
+  mutate(percent = round(n / sum(n) * 100, 1)) %>%
+  bind_rows(
+    summarize(., `Sex` = "Total",
+                 n = sum(n),
+                 percent = round(sum(n) / sum(n) * 100, 1))
+  ) %>%
+  kable()
+```
 
+```{r include=FALSE}
+fyc23_clean$race4[fyc23_clean$racethx == 1] <- "Hispanic"
+fyc23_clean$race4[fyc23_clean$racethx == 2] <- "NH White"
+fyc23_clean$race4[fyc23_clean$racethx == 3] <- "NH Black"
+fyc23_clean$race4[fyc23_clean$racethx %in% c(4, 5)] <- "NH Asian/Other"
+
+fyc23_clean$race4 <- factor(
+  fyc23_clean$race4,
+  levels = c("NH White", "NH Black", "Hispanic", "NH Asian/Other")
+)
+```
+
+However, from the race distribution table, it seems that...
+
+```{r echo=FALSE}
+fyc23_clean %>%
+  count(race4) %>%
+  rename(`Race Category` = race4) %>%
+  mutate(percent = round(n / sum(n) * 100, 1)) %>%
+  bind_rows(
+    summarize(., `Race Category` = "Total",
+                 n = sum(n),
+                 percent = round(sum(n) / sum(n) * 100, 1))
+  ) %>%
+  kable()
+```
 
