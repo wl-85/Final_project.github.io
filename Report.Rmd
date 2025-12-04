@@ -595,7 +595,7 @@ fyc23_clean %>%
   kable()
 ```
 
-## Interactive Dashboard
+### Interactive Dashboard
 We also created an interactive dashboard via rshiny to show the expenditure for each race or sex.
 You can zoom in or zoom out by dragging the parts of plot. We created a violin plot to show total
 health expenditure in 2023 by 4 age groups and different races, which is in different colors. We 
