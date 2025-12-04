@@ -149,7 +149,6 @@ h1.title {
   color: #555;
 }
 
-/* 快速链接区：三个大按钮 */
 .quick-links {
   display: flex;
   flex-wrap: wrap;
@@ -210,7 +209,7 @@ Overview
 
 Below is a quick overview of our project. <br> For details, please use the navigation bar or the buttons above.
 
-<div class="info-grid"> <div class="info-card"> <div class="info-card-title"> <i class="fa-solid fa-hospital-user info-card-icon"></i> High-cost patients </div> <div class="info-card-text"> We define expenditure groups (top 1%, 5%, 10%, bottom 50%) using survey-weighted percentiles of total annual expenditures (TOTEXP23). We then describe age, sex, race/ethnicity, income, and insurance across these groups. </div> </div> <div class="info-card"> <div class="info-card-title"> <i class="fa-solid fa-heart-pulse info-card-icon"></i> Conditions & disease burden </div> <div class="info-card-text"> Using the 2023 Medical Conditions file (HC-249) and CCSR categories, we identify the most commonly treated conditions and quantify their contribution to total spending among the top 5% of spenders. </div> </div> <div class="info-card"> <div class="info-card-title"> <i class="fa-solid fa-notes-medical info-card-icon"></i> Services, payers & dashboards </div> <div class="info-card-text"> We decompose expenditures by service type (inpatient, outpatient, ER, prescriptions, home health) and payer (out-of-pocket, private insurance, Medicare, Medicaid), and implement interactive visualizations using <code>plotly</code> and <code>flexdashboard</code>. </div> </div> </div>
+<div class="info-grid"> <div class="info-card"> <div class="info-card-title"> <i class="fa-solid fa-hospital-user info-card-icon"></i> High-cost patients </div> <div class="info-card-text"> We define expenditure groups (top 1%, 5%, 10%, bottom 50%) using survey-weighted percentiles of total annual expenditures (TOTEXP23). We then describe age, sex, race/ethnicity, income, and insurance across these groups. </div> </div> <div class="info-card"> <div class="info-card-title"> <i class="fa-solid fa-heart-pulse info-card-icon"></i> Conditions & disease burden </div> <div class="info-card-text"> Using the 2023 Medical Conditions file (HC-249) and CCSR categories, we identify the most commonly treated conditions and quantify their contribution to total spending among the top 5% of spenders. </div> </div> <div class="info-card"> <div class="info-card-title"> <i class="fa-solid fa-notes-medical info-card-icon"></i> Services, payers & dashboards </div> <div class="info-card-text"> We decompose expenditures by service type (inpatient, outpatient, ER, prescriptions, home health) and payer (out-of-pocket, private insurance, Medicare, Medicaid), and implement interactive visualizations using <code>rshiny</code> and <code>interactive dashboard</code>. </div> </div> </div>
 
 Quick links
 <div class="section-subtitle">

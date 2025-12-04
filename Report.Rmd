@@ -1,20 +1,32 @@
 ---
-title: "Report"
+title: "Project Report"
+author: "Team: Charline Gu (jg4891), Yaxuan Deng (yd2810), Yuanyuan Zhang (yz4982), Wen Li (wl3013)"
 output:
   html_document:
     toc: true
     toc_float: true
 ---
 
----
-title: "Report"
-output:
-  html_document:
-    toc: true
-    toc_float: true
----
+### Motivation
 
-## Data
+edit here
+
+<br>
+
+
+### Relate Work
+
+edit here
+
+<br>
+
+
+### Initial Question
+
+edit here
+
+<br>
+
 
 ### Data sources and access
 
@@ -173,13 +185,11 @@ To verify the integrity of our cleaned data and survey design, we conduct severa
 
 These steps provide confidence that our analytic datasets accurately reflect the intended MEPS design and that our derived variables are correctly constructed. All data cleaning and processing is implemented in R and is fully reproducible in the project code.
 
----
 
 ### Data cleaning code 
 
 *The full, reproducible code used to implement the cleaning steps described above is provided below. Readers who are primarily interested in results may skip this section.*
 
-<br>
 
 <details>
 <summary><strong> Click to show / hide full data cleaning and preparation code</strong></summary>
@@ -490,13 +500,12 @@ prop_exp <- prop.table(tab_exp)
 prop_exp
 sum(prop_exp)
 ```
-
 </details>
 
-<br><br>
+<br>
 
+---
 ## Demographic Information
-
 ```{r include=FALSE}
 # 2.2 Age groups：0–17, 18–44, 45–64, 65+
 fyc23_clean$age_cat4[fyc23_clean$agelast <= 17] <-
