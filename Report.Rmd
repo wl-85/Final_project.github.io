@@ -601,8 +601,7 @@ also created a histogram of number of people in four income levels, near-poor, p
 middle-income, and high-income, grouped by insurance types. In addition, we created a scatterplot to show the health expenditure in 2023 among different insurance types, grouped by sex. 
 The interactive dashboard can be accessed at [here](https://jinghg.shinyapps.io/final_projectgithub/).
 
-
-
-
-
+***
+## Discussion
+edit here
 
