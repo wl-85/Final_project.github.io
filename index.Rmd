@@ -10,6 +10,11 @@ header-includes:
 ---
 
 <style>
+body {
+  font-size: 16px; 
+  line-height: 1.7; 
+}
+
 .main-container {
   max-width: 1100px;
 }
@@ -45,20 +50,20 @@ h1.title {
 .hero-kicker {
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   opacity: 0.85;
   margin-bottom: 0.4rem;
 }
 
 .hero-title {
-  font-size: 2.1rem;
+  font-size: 2.3rem;
   font-weight: 700;
   margin-bottom: 0.6rem;
 }
 
 .hero-subtitle {
-  font-size: 1rem;
-  line-height: 1.6;
+  font-size: 1.05rem;
+  line-height: 1.7;
   max-width: 620px;
   opacity: 0.92;
 }
@@ -72,7 +77,7 @@ h1.title {
   display: inline-block;
   padding: 0.55rem 1.3rem;
   border-radius: 30px;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   text-decoration: none;
   margin-right: 0.7rem;
   transition: all 0.2s ease;
@@ -105,13 +110,13 @@ h1.title {
 
 /* 三个信息卡片区域 */
 .section-heading {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 0.6rem;
 }
 
 .section-subtitle {
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   color: #555;
   margin-bottom: 1.1rem;
 }
@@ -134,7 +139,7 @@ h1.title {
 
 .info-card-title {
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 1.05rem;
   margin-bottom: 0.35rem;
 }
 
@@ -145,7 +150,7 @@ h1.title {
 }
 
 .info-card-text {
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: #555;
 }
 
@@ -162,7 +167,7 @@ h1.title {
   border-radius: 999px;
   border: 1px solid #dde2eb;
   padding: 0.6rem 1rem;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -193,7 +198,7 @@ h1.title {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 
 .team-pill {
@@ -202,16 +207,110 @@ h1.title {
   background-color: #eef3fb;
   color: #1a2733;
 }
+
+/* === TOP STATS STRIP (FOCUS / DATA / METHODS + PILLS) === */
+
+.stats-strip {
+  margin: 2.2rem 0 2.4rem;
+}
+
+.stats-top-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
+}
+
+.stats-card {
+  flex: 1 1 260px;
+  background-color: #ffffff;
+  border-radius: 14px;
+  padding: 0.9rem 1.1rem;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.stats-card-label {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-bottom: 0.3rem;
+  display: flex;
+  align-items: center;
+}
+
+.stats-card-label i {
+  font-size: 0.9rem;
+  margin-right: 0.35rem;
+  color: #1f77b4;
+}
+
+.stats-card-text {
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: #111827;
+}
+
+/* bottom pill row */
+.stats-bottom-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
+}
+
+.stats-pill {
+  flex: 1 1 220px;
+  border-radius: 999px;
+  border: 1px dashed #cbd5e1;
+  background-color: #f8fafc;
+  padding: 0.65rem 1rem;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+}
+
+.stats-pill-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: #6b7280;
+  margin-bottom: 0.1rem;
+}
+
+.stats-pill-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+/* small buttons under the strip */
+.stats-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.hero-btn-small {
+  font-size: 0.9rem;
+  padding: 0.45rem 1.1rem;
+}
 </style>
 
+
 <div class="hero-section"> <div class="hero-inner"> <div class="hero-kicker">P8105 Final Project · Columbia Public Health</div> <div class="hero-title">High-Cost Patients in U.S. Healthcare: Evidence from MEPS 2023</div> <div class="hero-subtitle"> Using the 2023 Medical Expenditure Panel Survey (MEPS), we replicate and extend Mitchell (2023) to study how healthcare spending is concentrated, who the high-cost patients are, which conditions drive spending, and how costs are distributed across services and payers. </div> <div class="hero-buttons"> <a href="project.html" class="hero-btn-primary"> <i class="fa-solid fa-chart-line"></i> Explore code & results </a> <a href="proposal.html" class="hero-btn-ghost"> <i class="fa-regular fa-file-lines"></i> Read project proposal </a> </div> </div> </div>
-Overview
 
-Below is a quick overview of our project. <br> For details, please use the navigation bar or the buttons above.
+<div class="stats-strip"><div class="stats-top-row"><div class="stats-card"><div class="stats-card-label"><i class="fa-solid fa-bullseye"></i> FOCUS</div><div class="stats-card-text">High-cost patients, healthcare utilization, and value-based care in the U.S. system.</div></div><div class="stats-card"><div class="stats-card-label"><i class="fa-solid fa-database"></i> DATA</div><div class="stats-card-text">2023 MEPS (HC-251 &amp; HC-249) with person-level costs, conditions, and survey design features.</div></div><div class="stats-card"><div class="stats-card-label"><i class="fa-solid fa-gears"></i> METHODS</div><div class="stats-card-text">Reproducible R workflows, regression modeling, and interactive reporting for technical and non-technical stakeholders.</div></div></div><div class="stats-bottom-row"><div class="stats-pill"><div class="stats-pill-label">Sample size</div><div class="stats-pill-value">&asymp; 18,900 individuals</div></div><div class="stats-pill"><div class="stats-pill-label">Study year</div><div class="stats-pill-value">MEPS 2023</div></div><div class="stats-pill"><div class="stats-pill-label">Cost segments</div><div class="stats-pill-value">Top 1% · 5% · 10%</div></div></div>
 
-<div class="info-grid"> <div class="info-card"> <div class="info-card-title"> <i class="fa-solid fa-hospital-user info-card-icon"></i> High-cost patients </div> <div class="info-card-text"> We define expenditure groups (top 1%, 5%, 10%, bottom 50%) using survey-weighted percentiles of total annual expenditures (TOTEXP23). We then describe age, sex, race/ethnicity, income, and insurance across these groups. </div> </div> <div class="info-card"> <div class="info-card-title"> <i class="fa-solid fa-heart-pulse info-card-icon"></i> Conditions & disease burden </div> <div class="info-card-text"> Using the 2023 Medical Conditions file (HC-249) and CCSR categories, we identify the most commonly treated conditions and quantify their contribution to total spending among the top 5% of spenders. </div> </div> <div class="info-card"> <div class="info-card-title"> <i class="fa-solid fa-notes-medical info-card-icon"></i> Services, payers & dashboards </div> <div class="info-card-text"> We decompose expenditures by service type (inpatient, outpatient, ER, prescriptions, home health) and payer (out-of-pocket, private insurance, Medicare, Medicaid), and implement interactive visualizations using <code>rshiny</code> and <code>interactive dashboard</code>. </div> </div> </div>
+<div class="section-heading">Project overview</div>
+<div class="section-subtitle">
+  This page summarizes the key elements of our study. 
+  For full details, please use the navigation bar or the buttons above.
+</div>
 
-Quick links
+<div class="info-grid"> <div class="info-card"> <div class="info-card-title"> <i class="fa-solid fa-hospital-user info-card-icon"></i> High-cost patients </div> <div class="info-card-text"> We define expenditure groups (top 1%, 5%, 10%, bottom 50%) using survey-weighted percentiles of total annual expenditures (TOTEXP23). We then describe age, sex, race/ethnicity, income, and insurance across these groups. </div> </div> <div class="info-card"> <div class="info-card-title"> <i class="fa-solid fa-heart-pulse info-card-icon"></i> Conditions & disease burden </div> <div class="info-card-text"> Using the 2023 Medical Conditions file (HC-249) and CCSR categories, we identify the most commonly treated conditions and quantify their contribution to total spending among the top 5% of spenders. </div> </div> <div class="info-card"> <div class="info-card-title"> <i class="fa-solid fa-notes-medical info-card-icon"></i> Services, payers & dashboards </div> <div class="info-card-text"> We decompose expenditures by service type (inpatient, outpatient, ER, prescriptions, home health) and payer (out-of-pocket, private insurance, Medicare, Medicaid), and implement interactive visualizations using <code>rshiny</code> and <code>interactive dashboard</code>. </div> </div> </div> 
+
+<div class="section-heading">Quick links</div>
 <div class="section-subtitle">
   Quickly jump to the part you might be most concerned about (click the button below):
 </div>
@@ -227,7 +326,7 @@ Quick links
 
   <a class="quick-link-btn" href="proposal.html">
     <i class="fa-regular fa-file-lines"></i>
-    Study aims, background & methods
+    Study aims & background
   </a>
   
    <a class="quick-link-btn" href="Report.html">
@@ -249,5 +348,4 @@ Quick links
 </a>
 </a>
 
-Team
-<div class="team-strip-title">Project team · Mailman School of Public Health</div> <div class="team-strip"> <div class="team-pill">Charline Gu (jg4891)</div> <div class="team-pill">Yaxuan Deng (yd2810)</div> <div class="team-pill">Yuanyuan Zhang (yz4982)</div> <div class="team-pill">Wen Li (wl3013)</div> </div>
+<div class="section-heading">Team</div><div class="team-strip-title">Project team · Mailman School of Public Health</div> <div class="team-strip"> <div class="team-pill">Charline Gu (jg4891)</div> <div class="team-pill">Yaxuan Deng (yd2810)</div> <div class="team-pill">Yuanyuan Zhang (yz4982)</div> <div class="team-pill">Wen Li (wl3013)</div> </div>
