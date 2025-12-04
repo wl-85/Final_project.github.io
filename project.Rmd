@@ -18,6 +18,7 @@ library(readxl)
 library(haven)
 library(survey)
 library(MEPS)
+library(dplyr)
 
 # Read "2023 MEPS" data
 # 2023 Full-Year Consolidated（HC-251）
@@ -414,4 +415,260 @@ prop_exp
 sum(prop_exp)  # ≈ 1
 ```
 
+## Regression
+
+Quantify how demographics, socioeconomic status, and medical conditions are associated with belonging to the high-cost group.
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(purrr)
+library(survey)
+```
+
+```{r}
+# create n_ccsr to record multi-morbidity
+person_ccsr <- cond23_clean %>% 
+  group_by(dupersid) %>% 
+  summarise(
+    n_ccsr = n_distinct(ccsr_main),   # number of diseases with different CCSR 
+    .groups = "drop"
+  ) %>% 
+  mutate(
+    multi_morbidity = if_else(n_ccsr >= 3, 1, 0)  # threshold can be customized
+  )
+```
+
+Add a few binary disease index for regression covariates.
+
+```{r}
+ccsr_counts <- cond23_clean %>% 
+  count(ccsr_main, sort = TRUE)
+
+head(ccsr_counts,10)
+
+ccsr_top20 <- ccsr_counts %>% 
+  slice_max(n, n = 20)
+
+ggplot(ccsr_top20,
+       aes(x = reorder(ccsr_main, n),
+           y = n)) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    x = "CCSR category",
+    y = "Number of condition records",
+    title = "Top 20 most common CCSR condition categories (unweighted)"
+  )
+```
+
+
+```{r}
+# recheck using weight
+ccsr_w_counts <- cond23_clean %>% 
+  group_by(ccsr_main) %>% 
+  summarise(
+    w_count = sum(perwt23f, na.rm = TRUE),
+    .groups = "drop"
+  ) %>% 
+  arrange(desc(w_count))
+
+ccsr_w_top20 <- ccsr_w_counts %>% 
+  slice_max(w_count, n = 20)
+
+ggplot(ccsr_w_top20,
+       aes(x = reorder(ccsr_main, w_count),
+           y = w_count)) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    x = "CCSR category",
+    y = "Weighted count of conditions",
+    title = "Top 20 CCSR condition categories (weighted by PERWT23F)"
+  )
+```
+
+```{r}
+# compare top 10 ccsr
+data.frame(
+  unweighted_top10 = ccsr_counts$ccsr_main[1:10],
+  weighted_top10   = ccsr_w_counts$ccsr_main[1:10]
+)
+
+ccsr_union <- union(ccsr_counts$ccsr_main[1:10], ccsr_w_counts$ccsr_main[1:10])
+ccsr_union
+```
+
+```{r}
+ccsr_main_values <- unique(cond23_clean$ccsr_main)
+
+# create binary variable for each ccsr in ccsr_union
+for (disease in ccsr_union) {
+  var_name <- disease
+  # check whether the person has that disease
+  person_ccsr[[var_name]] <- ifelse(
+    person_ccsr$dupersid %in% cond23_clean$dupersid[cond23_clean$ccsr_main == disease],
+    1, 
+    0
+  )
+}
+
+```
+
+```{r}
+fyc23_model <- fyc23_clean %>%
+  left_join(person_ccsr, by = "dupersid") %>% 
+  mutate(high_cost = ifelse(exp_group == "Top 5%", 1, 0))
+# set outcome variable as 'whether the person is in the top 5% expenses group'
+         
+
+des_model <- svydesign(
+  ids     = ~varpsu,
+  strata  = ~varstr,
+  weights = ~perwt23f,
+  data    = fyc23_model,
+  nest    = TRUE
+)
+```
+
+### feature selection
+
+
+```{r}
+# baseline model
+baseline_formula <- high_cost ~ 
+  age_cat4 + sex_f + race4 + povcat_f + inscov_f + n_ccsr
+
+model_baseline <- svyglm(
+  baseline_formula,
+  design = des_model,
+  family = quasibinomial()
+)
+summary(model_baseline)
+```
+
+```{r}
+# full model
+ccsr_vars <- c("CIR007","END010","MUS010","END002","MBD005",          "MBD002","END001","MUS006","DIG004","RSP009","INJ031")
+
+full_formula <- update(
+  baseline_formula,
+  paste(". ~ . +", paste(ccsr_vars, collapse = " + "))
+)
+
+model_full <- svyglm(
+  full_formula,
+  design = des_model,
+  family = quasibinomial()
+)
+summary(model_full)
+
+```
+
+```{r}
+# model with selected significant variables
+selected_vars <- c(
+  "age_cat4",
+  "sex_f",
+  "povcat_f",
+  "inscov_f",
+  "n_ccsr",
+  "END010","END002","MBD005","MBD002","END001","RSP009"
+)
+
+full_formula2 <- as.formula(
+  paste("high_cost ~", paste(selected_vars, collapse = " + "))
+)
+
+
+model_selected <- svyglm(
+  full_formula2,
+  design = des_model,
+  family = quasibinomial()
+)
+
+summary(model_selected)
+
+```
+
+
+```{r}
+AIC(model_baseline)
+AIC(model_full)
+AIC(model_selected)
+```
+```{r}
+# cv validation
+cv_rmse <- function(formula, data, K = 5) {
+  n <- nrow(data)
+  folds <- sample(rep(1:K, length.out = n))
+  
+  rmse_vec <- numeric(K)
+  
+  for (k in 1:K) {
+    train <- data[folds != k, ]
+    test  <- data[folds == k, ]
+    
+    fit <- glm(formula, data = train, family = binomial())
+    
+  
+    p_hat <- predict(fit, newdata = test, type = "response")
+    
+    # RMSE between predicted probability and actual 0/1
+    rmse_vec[k] <- sqrt(mean((p_hat - test$high_cost)^2))
+  }
+  
+  rmse_vec
+}
+
+```
+
+```{r}
+set.seed(1234)
+n_rep <- 10
+K <- 5
+
+df_cv <- fyc23_model %>%
+  select(
+    high_cost,
+    age_cat4, sex_f, race4, povcat_f, inscov_f, n_ccsr,
+    CIR007, END010, MUS010, END002, MBD005, MBD002, END001, MUS006, DIG004, RSP009, INJ031
+  )%>%
+  drop_na() %>%                            
+  mutate(
+    high_cost = as.numeric(high_cost),      
+   
+  )
+
+cv_results <- map_dfr(1:n_rep, ~{
+  tibble(
+    model = "Baseline",
+    rmse  = cv_rmse(baseline_formula, df_cv, K = K)
+  ) %>%
+    bind_rows(
+      tibble(
+        model = "Full",
+        rmse  = cv_rmse(full_formula, df_cv, K = K)
+      ),
+      tibble(
+        model = "Selected",
+        rmse  = cv_rmse(full_formula2, df_cv, K = K)
+      )
+    )
+})
+```
+
+
+```{r}
+ggplot(cv_results, aes(x = model, y = rmse)) +
+  geom_violin(trim = FALSE, fill = NA, color = "lightblue") +
+  geom_boxplot(width = 0.15, fill = "white", outlier.size = 0.5) +
+  labs(
+    x = NULL,
+    y = "Cross-validated RMSE",
+    title = "Cross-validated prediction error for three models"
+  ) +
+  theme_minimal()
+```
 
