@@ -6,7 +6,9 @@ output:
     toc_float: true
 ---
 
+***
 
+## Import data
 ```{r setup, include=FALSE}
 # Load in packages
 library(devtools)
@@ -53,8 +55,8 @@ names(fyc23)[1:30]
 grep("23", names(fyc23), value = TRUE)[1:20]
 nrow(fyc23) 
 ```
-
-## data clean
+ 
+## Clean data "fyc23"
 ```{r}
 fyc23_clean <- fyc23
 
@@ -91,8 +93,7 @@ des23 <- svydesign(
 
 ```
 
-
-## Demografic variables
+### Demografic variables
 ```{r}
 # 2.1 Build blank variable columns
 
@@ -263,7 +264,7 @@ svytable(~ exp_group, des23) / sum(weights(des23))
 
 ```
 
-## Handle the data of "cond23"
+## Clean data "cond23"
 ```{r}
 # A copy from "cond23"
 cond23_clean <- cond23
@@ -315,8 +316,7 @@ cond23_clean <- cond23_clean[ , keep_cond_vars]
 head( sort(table(cond23_clean$ccsr_main), decreasing = TRUE), 10 )
 ```
 
-
-## double check
+## Double check
 ```{r}
 ## 1. Calculate the "Total population" under the survey design
 total_pop <- sum(weights(des23))

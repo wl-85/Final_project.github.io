@@ -358,6 +358,9 @@ div.tocify {
 </div>
 
 
+<hr />
+<div id="import-data" class="section level2">
+<h2>Import data</h2>
 <pre class="r"><code># This chunk only need to run in &quot;Console&quot; once, do not run when knitting the file
 # devtools::install_github(&quot;e-mitchell/meps_r_pkg/MEPS&quot;)
 # library(MEPS)</code></pre>
@@ -379,8 +382,9 @@ names(fyc23)[1:30]</code></pre>
 ## [19] &quot;age23x&quot;   &quot;marry23x&quot;</code></pre>
 <pre class="r"><code>nrow(fyc23) </code></pre>
 <pre><code>## [1] 18919</code></pre>
-<div id="data-clean" class="section level2">
-<h2>data clean</h2>
+</div>
+<div id="clean-data-fyc23" class="section level2">
+<h2>Clean data “fyc23”</h2>
 <pre class="r"><code>fyc23_clean &lt;- fyc23
 
 # Only keep the individuals with positive weight
@@ -413,9 +417,8 @@ des23 &lt;- svydesign(
   data   = fyc23_clean,
   nest   = TRUE
 )</code></pre>
-</div>
-<div id="demografic-variables" class="section level2">
-<h2>Demografic variables</h2>
+<div id="demografic-variables" class="section level3">
+<h3>Demografic variables</h3>
 <pre class="r"><code># 2.1 Build blank variable columns
 
 fyc23_clean$age_cat4  &lt;- NA
@@ -630,8 +633,9 @@ svytable(~ exp_group, des23)</code></pre>
 ## Bottom 50%     50–90%    Top 10%     Top 5%     Top 1% 
 ## 0.50001981 0.39996996 0.04998330 0.03996387 0.01006306</code></pre>
 </div>
-<div id="handle-the-data-of-cond23" class="section level2">
-<h2>Handle the data of “cond23”</h2>
+</div>
+<div id="clean-data-cond23" class="section level2">
+<h2>Clean data “cond23”</h2>
 <pre class="r"><code># A copy from &quot;cond23&quot;
 cond23_clean &lt;- cond23
 
@@ -685,7 +689,7 @@ head( sort(table(cond23_clean$ccsr_main), decreasing = TRUE), 10 )</code></pre>
 ##   4312   3626   2557   1960   1791   1557   1346   1345   1245   1212</code></pre>
 </div>
 <div id="double-check" class="section level2">
-<h2>double check</h2>
+<h2>Double check</h2>
 <pre class="r"><code>## 1. Calculate the &quot;Total population&quot; under the survey design
 total_pop &lt;- sum(weights(des23))
 total_pop</code></pre>

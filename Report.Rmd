@@ -15,7 +15,7 @@ Motivated by these challenges, this project aims to analyze the relationship bet
 
 
 ***
-## Relate Work
+## Related Work
 Our project is largely inspired by [Mitchell’s MEPS Statistical Brief](https://meps.ahrq.gov/data_files/publications/st546/stat546.shtml). Following this brief provides us with a well-established methodological framework for defining high-expenditure groups, characterizing their demographic and clinical profiles, and decomposing spending by service type and payer. By using this approach, we ensure that our analysis is methodologically sound, comparable to prior work, and capable of producing interpretable population-level insights.
 In addition, we draw on tools and techniques introduced in class, particularly for interactive visualization. Our interactive dashboard is implemented using R Shiny dashboard, which allows users to explore expenditure groups, demographics, and condition categories in a more intuitive and accessible way.
 
