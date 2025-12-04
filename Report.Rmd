@@ -5,34 +5,28 @@ output:
   html_document:
     toc: true
     toc_float: true
+    toc_depth: 3
 ---
 
-### Motivation
-
+***
+## Motivation
 In 2023, healthcare spending in the United States accounted for 17.6% of the national GDP, totaling approximately $4.9 trillion. Despite this immense expenditure, millions of Americans continue to struggle with chronic diseases, and healthcare delivery remains highly fragmented. This inefficiency not only strains the system financially but also results in poorer outcomes for those who need care the most. One of the central challenges is the “hot spotters” problem—a small subset of patients who incur the highest costs often receive the least coordinated and least effective care. Understanding who these patients are, what conditions they have, and how their costs evolve over time is critical for developing targeted interventions that improve health outcomes while reducing unnecessary spending.
 Motivated by these challenges, this project aims to analyze the relationship between healthcare costs and medical conditions to uncover patterns among high-cost patients. By identifying key demographic and clinical characteristics associated with elevated healthcare spending, we aim to inform strategies for more effective resource allocation and more integrated models of care.
 
 
-<br>
-
-
-### Relate Work
-
-Our project is largely inspired by [Mitchell’s MEPS Statistical Brief] (https://meps.ahrq.gov/data_files/publications/st546/stat546.shtml). Following this brief provides us with a well-established methodological framework for defining high-expenditure groups, characterizing their demographic and clinical profiles, and decomposing spending by service type and payer. By using this approach, we ensure that our analysis is methodologically sound, comparable to prior work, and capable of producing interpretable population-level insights.
+***
+## Relate Work
+Our project is largely inspired by [Mitchell’s MEPS Statistical Brief](https://meps.ahrq.gov/data_files/publications/st546/stat546.shtml). Following this brief provides us with a well-established methodological framework for defining high-expenditure groups, characterizing their demographic and clinical profiles, and decomposing spending by service type and payer. By using this approach, we ensure that our analysis is methodologically sound, comparable to prior work, and capable of producing interpretable population-level insights.
 In addition, we draw on tools and techniques introduced in class, particularly for interactive visualization. Our interactive dashboard is implemented using R Shiny dashboard, which allows users to explore expenditure groups, demographics, and condition categories in a more intuitive and accessible way.
 
-
-<br>
-
-
-### Initial Question
+***
+## Initial Question
 
 edit here
 
-<br>
 
-
-### Data sources and access
+***
+## Data sources and access
 
 Our analysis uses publicly available data from the Medical Expenditure Panel Survey (MEPS), conducted by the Agency for Healthcare Research and Quality (AHRQ). Specifically, we draw on two 2023 public-use files:
 
@@ -506,9 +500,9 @@ sum(prop_exp)
 ```
 </details>
 
-<br>
 
----
+
+***
 ## Demographic Information
 ```{r include=FALSE}
 # 2.2 Age groups：0–17, 18–44, 45–64, 65+
