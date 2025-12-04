@@ -1,18 +1,192 @@
 ---
 title: "Report"
-output: html_document
+output:
+  html_document:
+    toc: true
+    toc_float: true
 ---
 
+---
+title: "Report"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
 
+## Data
 
+### Data sources and access
 
+Our analysis uses publicly available data from the Medical Expenditure Panel Survey (MEPS), conducted by the Agency for Healthcare Research and Quality (AHRQ). Specifically, we draw on two 2023 public-use files:
 
+- **2023 Full-Year Consolidated Data File (HC-251)**  
+  This file provides person-level information on annual health care expenditures, demographics, insurance coverage, and survey design variables for the U.S. civilian noninstitutionalized population.
 
+- **2023 Medical Conditions File (HC-249)**  
+  This file contains encounter-level information on medical conditions reported during MEPS interviews, including condition identifiers and Clinical Classifications Software Refined (CCSR) codes.
 
+Both files were downloaded from the MEPS website as standardized `.ssp` files. We imported them into R using the `MEPS` R package and the `read_MEPS()` function, which implements the recommended MEPS data-reading workflow and preserves variable formats. For convenience in downstream analysis, we converted all variable names to lowercase immediately after import.
 
+### Unit of analysis and key variables
 
-## Demographic Information
-```{r setup, include=FALSE}
+The primary unit of analysis in this project is the **individual (person)**. From the full-year consolidated file (HC-251), we retain:
+
+- **Survey design variables**
+  - `varstr`, `varpsu`: variance strata and primary sampling unit identifiers  
+  - `perwt23f`: person-level survey weight  
+
+- **Expenditure variable**
+  - `totexp23`: total health care expenditures in 2023, summing all payments from all payers and service types at the person level  
+
+- **Core demographic and socioeconomic variables**
+  - `agelast`: age at the end of 2023  
+  - `sex`: sex (1 = male, 2 = female)  
+  - `racethx`: detailed race/ethnicity categories  
+  - `povcat23`: family income relative to the federal poverty line (1–5)  
+  - `inscov23`: insurance coverage category (1 = any private, 2 = public only, 3 = uninsured)  
+
+From the conditions file (HC-249), we retain:
+
+- **Linkage and survey design variables:** `dupersid`, `condidx`, `varstr`, `varpsu`, `perwt23f`  
+- **Condition classification:** CCSR codes (`ccsr1x`–`ccsr4x`), which we later collapse to a single primary condition code per record.
+
+These variables form the basis for defining high-cost groups, describing population characteristics, and identifying the most commonly treated conditions among high-expenditure patients.
+
+### Cleaning and preparation of the person-level file (HC-251)
+
+We begin by creating a working copy of the full-year consolidated file and applying several cleaning steps:
+
+1. **Restriction to positive weights**  
+   MEPS uses person-level weights to represent the target population. We restrict the analytic dataset to records with `perwt23f > 0`, which excludes ineligible or unweighted respondents and ensures that weighted estimates correspond to the 2023 U.S. civilian noninstitutionalized population.
+
+2. **Standardizing missing values**  
+   MEPS encodes various types of missing or inapplicable responses using negative numeric codes (e.g., -1, -7, -8, -9, -15). To avoid treating these codes as valid values in summaries or models, we loop over all numeric variables and recode these negative codes to `NA`. This harmonized missing-value convention allows base R and `survey` functions to automatically exclude missing observations when computing estimates.
+
+3. **Variable selection**  
+   To keep the working dataset focused and efficient, we subset to a minimal set of variables required for our analyses: the person identifier (`dupersid`), survey design variables, `totexp23`, and the demographic and socioeconomic variables listed above. This curated dataset (`fyc23_clean`) is used to construct the survey design object and all subsequent person-level analyses.
+
+4. **Re-defining the survey design**  
+   After cleaning and subsetting, we reconstruct a survey design object using the `survey` package, specifying:
+   - clustering by `varpsu`  
+   - stratification by `varstr`  
+   - weighting by `perwt23f`  
+   - `nest = TRUE` to correctly reflect the multi-stage design  
+
+   All weighted estimates in the project—such as proportions, means, and quantiles—are computed under this survey design.
+
+### Construction of demographic and socioeconomic categories
+
+For descriptive and stratified analyses, we recode several MEPS variables into interpretable categorical factors:
+
+- **Age groups (`age_cat4`)**  
+  We categorize `agelast` into four life-stage groups commonly used in health services research:
+  - 0–17 years  
+  - 18–44 years  
+  - 45–64 years  
+  - 65 years and older  
+
+  The factor is explicitly ordered from youngest to oldest to facilitate interpretation of age patterns.
+
+- **Sex (`sex_f`)**  
+  We recode `sex` into a labeled factor with levels **“Male”** and **“Female”**, matching the original coding (1 and 2, respectively).
+
+- **Race/ethnicity (`race4`)**  
+  Using `racethx`, we construct a four-category race/ethnicity variable:
+  - Hispanic  
+  - Non-Hispanic White (NH White)  
+  - Non-Hispanic Black (NH Black)  
+  - Non-Hispanic Asian/Other (NH Asian/Other), combining smaller non-White, non-Black race categories to improve stability of estimates  
+
+  The reference level is set to NH White, which is consistent with many MEPS reports and facilitates interpretation of racial/ethnic comparisons.
+
+- **Income relative to poverty (`povcat_f`)**  
+  `povcat23` (1–5) is recoded into labeled categories:
+  - Poor  
+  - Near-poor  
+  - Low income  
+  - Middle income  
+  - High income  
+
+  Note that “High income” in MEPS corresponds to family income ≥ 4 times the federal poverty line; this group primarily represents middle-class and above rather than the extremely wealthy.
+
+- **Insurance coverage (`inscov_f`)**  
+  We recode `inscov23` into:
+  - Any private insurance  
+  - Public insurance only  
+  - Uninsured  
+
+After creating these factors, we reconstruct the survey design object so that all downstream analyses use the updated categorical variables.
+
+### Defining expenditure groups (Top 1%, Top 5%, Top 10%, Bottom 50%)
+
+Following the approach in the MEPS Statistical Brief on the concentration of healthcare expenditures, we use survey-weighted quantiles of `totexp23` to define mutually exclusive expenditure groups:
+
+- Using `svyquantile()` under our survey design, we compute the weighted:
+  - 50th percentile (median)  
+  - 90th percentile  
+  - 95th percentile  
+  - 99th percentile  
+
+Letting these cutpoints be \(p_{50}\), \(p_{90}\), \(p_{95}\), and \(p_{99}\), we create a categorical variable `exp_group`:
+
+- **Top 1%**: `totexp23 ≥ p99`  
+- **Top 5%**: `p95 ≤ totexp23 < p99`  
+- **Top 10%**: `p90 ≤ totexp23 < p95`  
+- **Bottom 50%**: `totexp23 ≤ p50`  
+- **50–90%**: all remaining individuals with expenditures between the median and the 90th percentile  
+
+The factor is ordered as: Bottom 50%, 50–90%, Top 10%, Top 5%, Top 1%. This structure allows us to align our results with prior MEPS briefs and to focus particularly on the small subset of “high-cost” patients in the Top 1% and Top 5%.
+
+We then reconstruct the survey design once more using `fyc23_clean` with `exp_group` included, enabling direct computation of weighted distributions of demographic and clinical characteristics within each expenditure group.
+
+### Cleaning and preparation of the conditions file (HC-249)
+
+To study the clinical profile of high-cost patients, we process the 2023 Medical Conditions file as follows:
+
+1. **Standardizing missing values**  
+   As in the person file, we convert negative numeric codes (e.g., -1, -7, -8, -9, -15) to `NA` across all numeric variables. For the CCSR code variables (`ccsr1x`–`ccsr4x`), which are stored as character strings, we replace sentinel values such as `"-1"` and `"-15"` with `NA`.
+
+2. **Defining a primary CCSR code (`ccsr_main`)**  
+   Each condition record may have up to four CCSR codes. To simplify analysis and ensure that each record is assigned a single primary condition category, we construct `ccsr_main` using a hierarchical rule:
+   - Start with `ccsr1x`  
+   - If `ccsr1x` is missing, use `ccsr2x`  
+   - If still missing, fall back to `ccsr3x`, and then `ccsr4x` if necessary  
+
+   We drop records for which all four CCSR codes are missing so that the conditions dataset only includes observations with a valid clinical classification.
+
+3. **Variable selection**  
+   We retain only variables needed for linkage and weighting in later analyses:
+   - `dupersid` (person identifier) and `condidx` (condition identifier)  
+   - `varstr`, `varpsu`, `perwt23f`  
+   - `ccsr_main`  
+
+   This cleaned conditions dataset (`cond23_clean`) can be merged with the person-level dataset by `dupersid`, allowing us to describe the most common CCSR categories among individuals in the Top 1%, Top 5%, and other expenditure groups.
+
+### Quality checks
+
+To verify the integrity of our cleaned data and survey design, we conduct several diagnostic checks:
+
+- We confirm that the sum of survey weights in the person-level design is on the order of the U.S. population and that the weighted totals by age group, race/ethnicity, poverty category, and insurance status closely match the overall total (up to small rounding differences).  
+- We inspect cross-tabulations between original MEPS codes and our recoded factors (e.g., `racethx` vs. `race4`, `povcat23` vs. `povcat_f`, `inscov23` vs. `inscov_f`) to ensure that category mappings are correct.  
+- We compute weighted frequencies and proportions for `exp_group` to confirm that the quantile-based cutpoints produce reasonable shares of the population in each expenditure category.
+
+These steps provide confidence that our analytic datasets accurately reflect the intended MEPS design and that our derived variables are correctly constructed. All data cleaning and processing is implemented in R and is fully reproducible in the project code.
+
+---
+
+### Data cleaning code 
+
+*The full, reproducible code used to implement the cleaning steps described above is provided below. Readers who are primarily interested in results may skip this section.*
+
+<br>
+
+<details>
+<summary><strong> Click to show / hide full data cleaning and preparation code</strong></summary>
+
+<br>
+
+```{r data-cleaning-full, echo=TRUE, message=FALSE, warning=FALSE}
 # Load in packages
 library(devtools)
 library(tidyverse)
@@ -42,6 +216,17 @@ des23 <- svydesign(
   nest   = TRUE
 )
 
+# This chunk only need to run in "Console" once, do not run when knitting the file
+# devtools::install_github("e-mitchell/meps_r_pkg/MEPS")
+# library(MEPS)
+
+# Quick check of the total fee variable (totexp23)
+summary(fyc23$totexp23)
+names(fyc23)[1:30]
+grep("23", names(fyc23), value = TRUE)[1:20]
+nrow(fyc23) 
+
+## data clean
 fyc23_clean <- fyc23
 
 # Only keep the individuals with positive weight
@@ -59,7 +244,7 @@ for (j in which(num_vars)) {
 # Only keep the variables needed for this project (could extend later)
 keep_vars <- c(
   "dupersid", "panel", "varstr", "varpsu", "perwt23f",
-  "totexp23",           # Total fee
+  "totexp23",
   "agelast", "sex", "racethx",
   "povcat23", "inscov23"
 )
@@ -75,12 +260,242 @@ des23 <- svydesign(
   nest   = TRUE
 )
 
+## Demographic variables
+
+# 2.1 Build blank variable columns
 fyc23_clean$age_cat4  <- NA
 fyc23_clean$sex_f     <- NA
 fyc23_clean$race4     <- NA
 fyc23_clean$povcat_f  <- NA
 fyc23_clean$inscov_f  <- NA
+
+# 2.2 Age groups：0–17, 18–44, 45–64, 65+
+fyc23_clean$age_cat4[fyc23_clean$agelast <= 17] <- "0-17"
+fyc23_clean$age_cat4[fyc23_clean$agelast >= 18 & fyc23_clean$agelast <= 44] <- "18-44"
+fyc23_clean$age_cat4[fyc23_clean$agelast >= 45 & fyc23_clean$agelast <= 64] <- "45-64"
+fyc23_clean$age_cat4[fyc23_clean$agelast >= 65] <- "65+"
+
+fyc23_clean$age_cat4 <- factor(
+  fyc23_clean$age_cat4,
+  levels = c("0-17", "18-44", "45-64", "65+")
+)
+
+# 2.3 Gender: 1=Male, 2=Female
+fyc23_clean$sex_f[fyc23_clean$sex == 1] <- "Male"
+fyc23_clean$sex_f[fyc23_clean$sex == 2] <- "Female"
+fyc23_clean$sex_f <- factor(
+  fyc23_clean$sex_f,
+  levels = c("Male", "Female")
+)
+
+# 2.4 Race: NH White, NH Black, Hispanic, NH Asian/Other
+fyc23_clean$race4[fyc23_clean$racethx == 1] <- "Hispanic"
+fyc23_clean$race4[fyc23_clean$racethx == 2] <- "NH White"
+fyc23_clean$race4[fyc23_clean$racethx == 3] <- "NH Black"
+fyc23_clean$race4[fyc23_clean$racethx %in% c(4, 5)] <- "NH Asian/Other"
+
+fyc23_clean$race4 <- factor(
+  fyc23_clean$race4,
+  levels = c("NH White", "NH Black", "Hispanic", "NH Asian/Other")
+)
+
+# 2.5 Poverty line groups (POVCAT23): 1–5
+pov_labels <- c(
+  "Poor", "Near-poor", "Low income",
+  "Middle income", "High income"
+)
+
+fyc23_clean$povcat_f <- factor(
+  fyc23_clean$povcat23,
+  levels = 1:5,
+  labels = pov_labels
+)
+
+# 2.6 Insurance type (INSCOV23): 1 any private, 2 public only, 3 uninsured
+ins_labels <- c("Any private", "Public only", "Uninsured")
+
+fyc23_clean$inscov_f <- factor(
+  fyc23_clean$inscov23,
+  levels = 1:3,
+  labels = ins_labels
+)
+
+# 2.7 Use updated data to rebuild "design"
+des23 <- svydesign(
+  ids    = ~varpsu,
+  strata = ~varstr,
+  weights= ~perwt23f,
+  data   = fyc23_clean,
+  nest   = TRUE
+)
+
+# Quick checks
+svytable(~ age_cat4, des23)
+svytable(~ race4, des23)
+svytable(~ povcat_f, des23)
+svytable(~ inscov_f, des23)
+
+table(fyc23_clean$age_cat4, useNA = "ifany")
+tapply(
+  fyc23_clean$agelast,
+  fyc23_clean$age_cat4,
+  function(x) range(x, na.rm = TRUE)
+)
+table(fyc23_clean$racethx, fyc23_clean$race4, useNA = "ifany")
+table(fyc23_clean$povcat23, fyc23_clean$povcat_f, useNA = "ifany")
+table(fyc23_clean$inscov23, fyc23_clean$inscov_f, useNA = "ifany")
+
+# Define Top 1%、Top 5%、Top 10%、Bottom 50%
+exp_cuts <- svyquantile(
+  ~ totexp23,
+  design    = des23,
+  quantiles = c(0.50, 0.90, 0.95, 0.99),
+  ci        = FALSE
+)
+
+exp_cuts
+str(exp_cuts)
+
+q_vec <- as.numeric(exp_cuts$totexp23)
+p50 <- q_vec[1]
+p90 <- q_vec[2]
+p95 <- q_vec[3]
+p99 <- q_vec[4]
+
+fyc23_clean$exp_group <- NA
+fyc23_clean$exp_group[fyc23_clean$totexp23 >= p99] <- "Top 1%"
+fyc23_clean$exp_group[fyc23_clean$totexp23 >= p95 & fyc23_clean$totexp23 < p99] <- "Top 5%"
+fyc23_clean$exp_group[fyc23_clean$totexp23 >= p90 & fyc23_clean$totexp23 < p95] <- "Top 10%"
+fyc23_clean$exp_group[fyc23_clean$totexp23 <= p50] <- "Bottom 50%"
+
+fyc23_clean$exp_group[
+  is.na(fyc23_clean$exp_group) & !is.na(fyc23_clean$totexp23)
+] <- "50–90%"
+
+fyc23_clean$exp_group <- factor(
+  fyc23_clean$exp_group,
+  levels = c("Bottom 50%", "50–90%", "Top 10%", "Top 5%", "Top 1%")
+)
+
+des23 <- svydesign(
+  ids    = ~varpsu,
+  strata = ~varstr,
+  weights= ~perwt23f,
+  data   = fyc23_clean,
+  nest   = TRUE
+)
+
+svytable(~ exp_group, des23)
+svytable(~ exp_group, des23) / sum(weights(des23))
+
+# Handle the data of "cond23"
+cond23_clean <- cond23
+
+num_vars_c <- sapply(cond23_clean, is.numeric)
+for (j in which(num_vars_c)) {
+  x <- cond23_clean[[j]]
+  x[x %in% c(-1, -7, -8, -9, -15)] <- NA
+  cond23_clean[[j]] <- x
+}
+
+ccsr_cols <- grep("^ccsr", names(cond23_clean), value = TRUE)
+for (nm in ccsr_cols) {
+  x <- cond23_clean[[nm]]
+  x[x %in% c("-1", "-15")] <- NA
+  cond23_clean[[nm]] <- x
+}
+
+cond23_clean$ccsr_main <- cond23_clean$ccsr1x
+idx_na <- is.na(cond23_clean$ccsr_main) & !is.na(cond23_clean$ccsr2x)
+cond23_clean$ccsr_main[idx_na] <- cond23_clean$ccsr2x[idx_na]
+idx_na <- is.na(cond23_clean$ccsr_main) & !is.na(cond23_clean$ccsr3x)
+cond23_clean$ccsr_main[idx_na] <- cond23_clean$ccsr3x[idx_na]
+idx_na <- is.na(cond23_clean$ccsr_main) & !is.na(cond23_clean$ccsr4x)
+cond23_clean$ccsr_main[idx_na] <- cond23_clean$ccsr4x[idx_na]
+
+cond23_clean <- cond23_clean[!is.na(cond23_clean$ccsr_main), ]
+
+keep_cond_vars <- c(
+  "dupersid", "condidx",
+  "varstr", "varpsu", "perwt23f",
+  "ccsr_main"
+)
+cond23_clean <- cond23_clean[ , keep_cond_vars]
+
+head(sort(table(cond23_clean$ccsr_main), decreasing = TRUE), 10)
+
+# Double checks
+total_pop <- sum(weights(des23))
+total_pop
+
+tab_age   <- svytable(~ age_cat4,  des23)
+tab_race  <- svytable(~ race4,     des23)
+tab_pov   <- svytable(~ povcat_f,  des23)
+tab_ins   <- svytable(~ inscov_f,  des23)
+
+sum_age  <- sum(tab_age)
+sum_race <- sum(tab_race)
+sum_pov  <- sum(tab_pov)
+sum_ins  <- sum(tab_ins)
+
+c(
+  total_pop = total_pop,
+  sum_age   = sum_age,
+  sum_race  = sum_race,
+  sum_pov   = sum_pov,
+  sum_ins   = sum_ins
+)
+
+c(
+  age_minus_total  = sum_age  - total_pop,
+  race_minus_total = sum_race - total_pop,
+  pov_minus_total  = sum_pov  - total_pop,
+  ins_minus_total  = sum_ins  - total_pop
+)
+
+tab_age
+prop_age <- prop.table(tab_age)
+prop_age
+sum(prop_age)
+
+tab_race
+prop_race <- prop.table(tab_race)
+prop_race
+sum(prop_race)
+
+tab_pov
+prop_pov <- prop.table(tab_pov)
+prop_pov
+sum(prop_pov)
+
+tab_ins
+prop_ins <- prop.table(tab_ins)
+prop_ins
+sum(prop_ins)
+
+table(fyc23_clean$age_cat4, useNA = "ifany")
+tapply(
+  fyc23_clean$agelast,
+  fyc23_clean$age_cat4,
+  function(x) range(x, na.rm = TRUE)
+)
+
+table(fyc23_clean$racethx, fyc23_clean$race4, useNA = "ifany")
+table(fyc23_clean$povcat23, fyc23_clean$povcat_f, useNA = "ifany")
+table(fyc23_clean$inscov23, fyc23_clean$inscov_f, useNA = "ifany")
+
+tab_exp <- svytable(~ exp_group, des23)
+tab_exp
+prop_exp <- prop.table(tab_exp)
+prop_exp
+sum(prop_exp)
 ```
+
+</details>
+
+<br><br>
+
+## Demographic Information
 
 ```{r include=FALSE}
 # 2.2 Age groups：0–17, 18–44, 45–64, 65+
