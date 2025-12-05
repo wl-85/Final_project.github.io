@@ -328,6 +328,10 @@ h1.title {
     Study aims & background
   </a>
   
+  <a class="quick-link-btn" href="project.html">
+    <i class="fa-regular fa-file-lines"></i>
+    Regression Models
+  </a>
   
    <a class="quick-link-btn" href="Report.html">
     <i class="fa-regular fa-file-lines"></i>

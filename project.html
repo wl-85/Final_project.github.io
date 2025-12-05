@@ -360,7 +360,7 @@ div.tocify {
 
 <hr />
 <div id="import-data" class="section level2">
-<h2>Import data</h2>
+<h2>Import Data</h2>
 <pre class="r"><code># This chunk only need to run in &quot;Console&quot; once, do not run when knitting the file
 # devtools::install_github(&quot;e-mitchell/meps_r_pkg/MEPS&quot;)
 # library(MEPS)</code></pre>
@@ -418,7 +418,7 @@ des23 &lt;- svydesign(
   nest   = TRUE
 )</code></pre>
 <div id="demografic-variables" class="section level3">
-<h3>Demografic variables</h3>
+<h3>Demografic Variables</h3>
 <pre class="r"><code># 2.1 Build blank variable columns
 
 fyc23_clean$age_cat4  &lt;- NA
@@ -689,7 +689,7 @@ head( sort(table(cond23_clean$ccsr_main), decreasing = TRUE), 10 )</code></pre>
 ##   4312   3626   2557   1960   1791   1557   1346   1345   1245   1212</code></pre>
 </div>
 <div id="double-check" class="section level2">
-<h2>Double check</h2>
+<h2>Double Check</h2>
 <pre class="r"><code>## 1. Calculate the &quot;Total population&quot; under the survey design
 total_pop &lt;- sum(weights(des23))
 total_pop</code></pre>
@@ -725,7 +725,7 @@ c(
   ins_minus_total  = sum_ins  - total_pop
 )</code></pre>
 <pre><code>##  age_minus_total race_minus_total  pov_minus_total  ins_minus_total 
-##    -5.960464e-07     5.960464e-08    -9.536743e-07     0.000000e+00</code></pre>
+##                0                0                0                0</code></pre>
 <pre class="r"><code>## Age distribution: weighted frequency + proportion
 tab_age</code></pre>
 <pre><code>## age_cat4
@@ -836,8 +836,8 @@ prop_exp</code></pre>
 <pre class="r"><code>sum(prop_exp)  # ≈ 1</code></pre>
 <pre><code>## [1] 1</code></pre>
 </div>
-<div id="regression" class="section level2">
-<h2>Regression</h2>
+<div id="regression-model" class="section level2">
+<h2>Regression Model</h2>
 <p>Quantify how demographics, socioeconomic status, and medical
 conditions are associated with belonging to the high-cost group.</p>
 <pre class="r"><code>library(dplyr)
@@ -956,7 +956,7 @@ des_model &lt;- svydesign(
   nest    = TRUE
 )</code></pre>
 <div id="feature-selection" class="section level3">
-<h3>feature selection</h3>
+<h3>Feature Selection</h3>
 <pre class="r"><code># baseline model
 baseline_formula &lt;- high_cost ~ 
   age_cat4 + sex_f + race4 + povcat_f + inscov_f + n_ccsr

@@ -617,6 +617,260 @@ middle-income, and high-income, grouped by insurance types. In addition, we crea
 The interactive dashboard can be accessed at [here](https://jinghg.shinyapps.io/final_projectgithub/).
 
 ***
+## Regression Results
+In the regression analysis, we modeled membership in the Top 5% expenditure group as a binary outcome and examined how demographics, socioeconomic status, and clinical burden are associated with high-cost status. In the baseline survey-weighted logistic model including age group, sex, race/ethnicity, poverty category, insurance coverage, and the number of distinct CCSR condition categories, age and multi-morbidity were the most important predictors. Compared with children and younger adults, individuals aged 45–64 and 65+ had substantially higher odds of being high-cost, and each additional CCSR category was associated with a sizeable increase in the odds of belonging to the Top 5% group. Associations for race/ethnicity and poverty categories were generally small and imprecise after adjustment, and the estimated effect of sex attenuated once clinical covariates were included.
+
+We then augmented the baseline model with binary indicators for the most prevalent CCSR categories and constructed a reduced “selected” model retaining only statistically significant diagnosis indicators. Both the full and selected models achieved lower survey-weighted AIC than the baseline model, indicating improved in-sample fit. However, repeated K-fold cross-validation revealed very similar RMSE distributions for the baseline, full, and selected models, with substantial overlap across the three specifications. This pattern suggests that while adding diagnosis-specific indicators improves model fit to the observed data, it yields only modest gains in out-of-sample predictive accuracy. Overall, the count of distinct CCSR categories—the simple multi-morbidity measure—remains the dominant and most stable predictor of high-cost status, whereas individual diagnoses contribute relatively little incremental predictive information once multi-morbidity and age are taken into account.
+
+<br>
+
+*The full, reproducible code used to implement the regression modeling and cross-validation procedures described above is provided below. Readers who are primarily interested in results may skip this section.*
+
+<details>
+<summary><strong>Click to show / hide full regression modeling code</strong></summary>
+
+<br>
+
+```{r}
+# Load required packages
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(purrr)
+library(survey)
+
+## ------------------------------------------------------------------
+## 1. Construct multimorbidity measures and disease indicators
+## ------------------------------------------------------------------
+
+# create n_ccsr to record multi-morbidity
+person_ccsr <- cond23_clean %>% 
+  group_by(dupersid) %>% 
+  summarise(
+    n_ccsr = n_distinct(ccsr_main),   # number of diseases with different CCSR 
+    .groups = "drop"
+  ) %>% 
+  mutate(
+    multi_morbidity = if_else(n_ccsr >= 3, 1, 0)  # threshold can be customized
+  )
+
+# counts of conditions by CCSR code
+ccsr_counts <- cond23_clean %>% 
+  count(ccsr_main, sort = TRUE)
+
+head(ccsr_counts, 10)
+
+# top 20 (unweighted)
+ccsr_top20 <- ccsr_counts %>% 
+  slice_max(n, n = 20)
+
+ggplot(ccsr_top20,
+       aes(x = reorder(ccsr_main, n),
+           y = n)) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    x = "CCSR category",
+    y = "Number of condition records",
+    title = "Top 20 most common CCSR condition categories (unweighted)"
+  )
+
+# recheck using weights
+ccsr_w_counts <- cond23_clean %>% 
+  group_by(ccsr_main) %>% 
+  summarise(
+    w_count = sum(perwt23f, na.rm = TRUE),
+    .groups = "drop"
+  ) %>% 
+  arrange(desc(w_count))
+
+ccsr_w_top20 <- ccsr_w_counts %>% 
+  slice_max(w_count, n = 20)
+
+ggplot(ccsr_w_top20,
+       aes(x = reorder(ccsr_main, w_count),
+           y = w_count)) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    x = "CCSR category",
+    y = "Weighted count of conditions",
+    title = "Top 20 CCSR condition categories (weighted by PERWT23F)"
+  )
+
+# compare top 10 CCSR codes (unweighted vs weighted)
+data.frame(
+  unweighted_top10 = ccsr_counts$ccsr_main[1:10],
+  weighted_top10   = ccsr_w_counts$ccsr_main[1:10]
+)
+
+ccsr_union <- union(ccsr_counts$ccsr_main[1:10], ccsr_w_counts$ccsr_main[1:10])
+ccsr_union
+
+# create binary indicator for each CCSR in ccsr_union
+ccsr_main_values <- unique(cond23_clean$ccsr_main)
+
+for (disease in ccsr_union) {
+  var_name <- disease
+  # check whether the person has that disease
+  person_ccsr[[var_name]] <- ifelse(
+    person_ccsr$dupersid %in% cond23_clean$dupersid[cond23_clean$ccsr_main == disease],
+    1, 
+    0
+  )
+}
+
+## ------------------------------------------------------------------
+## 2. Merge person-level data and build survey design for modeling
+## ------------------------------------------------------------------
+
+fyc23_model <- fyc23_clean %>%
+  left_join(person_ccsr, by = "dupersid") %>% 
+  mutate(
+    high_cost = ifelse(exp_group == "Top 5%", 1, 0)  # Top 5% vs others
+  )
+
+des_model <- svydesign(
+  ids     = ~varpsu,
+  strata  = ~varstr,
+  weights = ~perwt23f,
+  data    = fyc23_model,
+  nest    = TRUE
+)
+
+## ------------------------------------------------------------------
+## 3. Logistic regression models and feature selection
+## ------------------------------------------------------------------
+
+# baseline model
+baseline_formula <- high_cost ~ 
+  age_cat4 + sex_f + race4 + povcat_f + inscov_f + n_ccsr
+
+model_baseline <- svyglm(
+  baseline_formula,
+  design = des_model,
+  family = quasibinomial()
+)
+summary(model_baseline)
+
+# full model with specific high-prevalence CCSR indicators
+ccsr_vars <- c(
+  "CIR007","END010","MUS010","END002","MBD005",
+  "MBD002","END001","MUS006","DIG004","RSP009","INJ031"
+)
+
+full_formula <- update(
+  baseline_formula,
+  paste(". ~ . +", paste(ccsr_vars, collapse = " + "))
+)
+
+model_full <- svyglm(
+  full_formula,
+  design = des_model,
+  family = quasibinomial()
+)
+summary(model_full)
+
+# reduced model with selected significant CCSR indicators
+selected_vars <- c(
+  "age_cat4",
+  "sex_f",
+  "povcat_f",
+  "inscov_f",
+  "n_ccsr",
+  "END010","END002","MBD005","MBD002","END001","RSP009"
+)
+
+full_formula2 <- as.formula(
+  paste("high_cost ~", paste(selected_vars, collapse = " + "))
+)
+
+model_selected <- svyglm(
+  full_formula2,
+  design = des_model,
+  family = quasibinomial()
+)
+summary(model_selected)
+
+# AIC comparison (survey-weighted effective AIC)
+AIC(model_baseline)
+AIC(model_full)
+AIC(model_selected)
+
+## ------------------------------------------------------------------
+## 4. Cross-validated prediction error (RMSE)
+## ------------------------------------------------------------------
+
+# K-fold CV function for RMSE
+cv_rmse <- function(formula, data, K = 5) {
+  n <- nrow(data)
+  folds <- sample(rep(1:K, length.out = n))
+  
+  rmse_vec <- numeric(K)
+  
+  for (k in 1:K) {
+    train <- data[folds != k, ]
+    test  <- data[folds == k, ]
+    
+    fit <- glm(formula, data = train, family = binomial())
+    
+    # predicted probability
+    p_hat <- predict(fit, newdata = test, type = "response")
+    
+    # RMSE between predicted probability and actual 0/1
+    rmse_vec[k] <- sqrt(mean((p_hat - test$high_cost)^2))
+  }
+  
+  rmse_vec
+}
+
+set.seed(1234)
+n_rep <- 10
+K <- 5
+
+df_cv <- fyc23_model %>%
+  select(
+    high_cost,
+    age_cat4, sex_f, race4, povcat_f, inscov_f, n_ccsr,
+    CIR007, END010, MUS010, END002, MBD005, MBD002, END001, MUS006, DIG004, RSP009, INJ031
+  ) %>%
+  drop_na() %>%                            
+  mutate(
+    high_cost = as.numeric(high_cost)
+  )
+
+cv_results <- map_dfr(1:n_rep, ~{
+  tibble(
+    model = "Baseline",
+    rmse  = cv_rmse(baseline_formula, df_cv, K = K)
+  ) %>%
+    bind_rows(
+      tibble(
+        model = "Full",
+        rmse  = cv_rmse(full_formula, df_cv, K = K)
+      ),
+      tibble(
+        model = "Selected",
+        rmse  = cv_rmse(full_formula2, df_cv, K = K)
+      )
+    )
+})
+
+# visualize RMSE distributions for the three models
+ggplot(cv_results, aes(x = model, y = rmse)) +
+  geom_violin(trim = FALSE, fill = NA, color = "lightblue") +
+  geom_boxplot(width = 0.15, fill = "white", outlier.size = 0.5) +
+  labs(
+    x = NULL,
+    y = "Cross-validated RMSE",
+    title = "Cross-validated prediction error for three models"
+  ) +
+  theme_minimal()
+```
+
+</details>
+
+***
 ## Discussion
-edit here
+Our findings show that extremely high health care spending in 2023 is concentrated among a small subset of older, multiply-morbid individuals, and that a parsimonious set of variables—age, insurance coverage, and a simple measure of multi-morbidity—captures most of the predictive signal available in MEPS. More complex models that incorporate detailed diagnosis indicators improve statistical fit but do not substantially enhance the ability to distinguish Top-5% spenders from the rest of the population. This underscores both the central role of multi-morbid chronic disease in driving expenditures and the limitations of cross-sectional survey data for prospective “hot-spotting.” From a policy perspective, these results suggest that risk-stratification and care-management efforts may benefit more from simple, robust measures of condition burden and age, coupled with system-level interventions to coordinate chronic care, rather than from increasingly complex predictive models built on limited cross-sectional information.
 

@@ -8,7 +8,7 @@ output:
 
 ***
 
-## Import data
+## Import Data
 ```{r setup, include=FALSE}
 # Load in packages
 library(devtools)
@@ -94,7 +94,7 @@ des23 <- svydesign(
 
 ```
 
-### Demografic variables
+### Demografic Variables
 ```{r}
 # 2.1 Build blank variable columns
 
@@ -317,7 +317,7 @@ cond23_clean <- cond23_clean[ , keep_cond_vars]
 head( sort(table(cond23_clean$ccsr_main), decreasing = TRUE), 10 )
 ```
 
-## Double check
+## Double Check
 ```{r}
 ## 1. Calculate the "Total population" under the survey design
 total_pop <- sum(weights(des23))
@@ -415,7 +415,7 @@ prop_exp
 sum(prop_exp)  # ≈ 1
 ```
 
-## Regression
+## Regression Model
 
 Quantify how demographics, socioeconomic status, and medical conditions are associated with belonging to the high-cost group.
 
@@ -532,7 +532,7 @@ des_model <- svydesign(
 )
 ```
 
-### feature selection
+### Feature Selection
 
 
 ```{r}
