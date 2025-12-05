@@ -294,18 +294,183 @@ h1.title {
   font-size: 0.9rem;
   padding: 0.45rem 1.1rem;
 }
+
+/* === KEY FINDINGS STRIP === */
+
+.highlight-section {
+  margin: 2rem 0 2.2rem;
+}
+
+.highlight-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.highlight-subtitle {
+  font-size: 0.98rem;
+  color: #555;
+  margin-bottom: 1rem;
+}
+
+.highlight-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.highlight-card {
+  flex: 1 1 260px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 0.9rem 1.1rem;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.highlight-tag {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: #6b7280;
+  margin-bottom: 0.2rem;
+}
+
+.highlight-main {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 0.2rem;
+}
+
+.highlight-detail {
+  font-size: 0.95rem;
+  color: #4b5563;
+}
+
+/* === WORKFLOW / STUDY STEPS === */
+
+.workflow-section {
+  margin: 2.2rem 0 2.4rem;
+}
+
+.workflow-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.workflow-step {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.7rem;
+}
+
+.workflow-number {
+  flex: 0 0 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: #1f77b4;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-right: 0.6rem;
+}
+
+.workflow-text {
+  font-size: 0.97rem;
+  color: #374151;
+}
+
+/* === DASHBOARD PREVIEW === */
+
+.dashboard-preview {
+  margin: 2.2rem 0 2.4rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  align-items: center;
+}
+
+.dashboard-text {
+  flex: 1 1 260px;
+}
+
+.dashboard-img-wrap {
+  flex: 1 1 260px;
+  text-align: center;
+}
+
+.dashboard-img-wrap img {
+  max-width: 100%;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.18);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+/* === Layout refinements for index === */
+
+.stats-strip {
+  margin: 2rem 0 2rem;
+}
+.stats-top-row,
+.stats-bottom-row {
+  justify-content: space-between;
+}
+
+.section-heading {
+  margin-top: 2rem;
+}
+.highlight-section {
+  margin-top: 1.5rem;
+  margin-bottom: 2rem;
+}
+.workflow-section {
+  margin-top: 1.8rem;
+  margin-bottom: 2.2rem;
+}
+
+.highlight-grid,
+.info-grid {
+  align-items: stretch;
+}
+.highlight-card,
+.info-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.quick-links {
+  margin-top: 0.6rem;
+  margin-bottom: 1.6rem;
+}
+
+
+@media (max-width: 900px) {
+  .stats-top-row,
+  .stats-bottom-row,
+  .highlight-grid,
+  .info-grid,
+  .quick-links {
+    gap: 0.8rem;
+  }
+  .stats-strip {
+    margin: 1.6rem 0 1.8rem;
+  }
+}
 </style>
 
 
 <div class="hero-section"> <div class="hero-inner"> <div class="hero-kicker">P8105 Final Project · Columbia Public Health</div> <div class="hero-title">High-Cost Patients in U.S. Healthcare: Evidence from MEPS 2023</div> <div class="hero-subtitle"> Using the 2023 Medical Expenditure Panel Survey (MEPS), we replicate and extend Mitchell (2023) to study how healthcare spending is concentrated, who the high-cost patients are, which conditions drive spending, and how costs are distributed across services and payers. </div> <div class="hero-buttons"> <a href="project.html" class="hero-btn-primary"> <i class="fa-solid fa-chart-line"></i> Explore code & results </a> <a href="proposal.html" class="hero-btn-ghost"> <i class="fa-regular fa-file-lines"></i> Read project proposal </a> </div> </div> </div>
 
-<div class="stats-strip"><div class="stats-top-row"><div class="stats-card"><div class="stats-card-label"><i class="fa-solid fa-bullseye"></i> FOCUS</div><div class="stats-card-text">High-cost patients, healthcare utilization, and value-based care in the U.S. system.</div></div><div class="stats-card"><div class="stats-card-label"><i class="fa-solid fa-database"></i> DATA</div><div class="stats-card-text">2023 MEPS (HC-251 &amp; HC-249) with person-level costs, conditions, and survey design features.</div></div><div class="stats-card"><div class="stats-card-label"><i class="fa-solid fa-gears"></i> METHODS</div><div class="stats-card-text">Reproducible R workflows, regression modeling, and interactive reporting for technical and non-technical stakeholders.</div></div></div><div class="stats-bottom-row"><div class="stats-pill"><div class="stats-pill-label">Sample size</div><div class="stats-pill-value">&asymp; 18,900 individuals</div></div><div class="stats-pill"><div class="stats-pill-label">Study year</div><div class="stats-pill-value">MEPS 2023</div></div><div class="stats-pill"><div class="stats-pill-label">Cost segments</div><div class="stats-pill-value">Top 1% · 5% · 10%</div></div></div>
 
-<div class="section-heading">Project overview</div>
-<div class="section-subtitle">
-  This page summarizes the key elements of our study. 
-  For full details, please use the navigation bar or the buttons above.
-</div>
+<div class="stats-strip"><div class="stats-top-row"><div class="stats-card"><div class="stats-card-label"><i class="fa-solid fa-bullseye"></i> FOCUS</div><div class="stats-card-text">High-cost patients, healthcare utilization, and value-based care in the U.S. system.</div></div><div class="stats-card"><div class="stats-card-label"><i class="fa-solid fa-database"></i> DATA</div><div class="stats-card-text">2023 MEPS (HC-251 &amp; HC-249) with person-level costs, conditions, and survey design features.</div></div><div class="stats-card"><div class="stats-card-label"><i class="fa-solid fa-gears"></i> METHODS</div><div class="stats-card-text">Reproducible R workflows, regression modeling, and interactive reporting for technical and non-technical stakeholders.</div></div></div><div class="stats-bottom-row"><div class="stats-pill"><div class="stats-pill-label">Sample size</div><div class="stats-pill-value">&asymp; 18,900 individuals</div></div><div class="stats-pill"><div class="stats-pill-label">Study year</div><div class="stats-pill-value">MEPS 2023</div></div><div class="stats-pill"><div class="stats-pill-label">Cost segments</div><div class="stats-pill-value">Top 1% · 5% · 10%</div></div></div></div>
+<div class="section-heading">Project overview</div><div class="section-subtitle">This page summarizes the key elements of our study. For full details, please use the navigation bar or the buttons below.</div><div class="highlight-section"><div class="highlight-title">Key findings at a glance</div><div class="highlight-subtitle">We summarize three headline insights from our analysis of 2023 MEPS high-cost patients.</div><div class="highlight-grid"><div class="highlight-card"><div class="highlight-tag">Concentration</div><div class="highlight-main">Top 5% of patients ≈ half of all spending</div><div class="highlight-detail">Expenditures are extremely concentrated: a small group of “hot spotters” accounts for a disproportionate share of total costs.</div></div><div class="highlight-card"><div class="highlight-tag">Who are they?</div><div class="highlight-main">Older &amp; multi-morbid</div><div class="highlight-detail">High-cost patients are disproportionately adults aged 45+ with multiple CCSR conditions across cardiovascular, endocrine, and mental health domains.</div></div><div class="highlight-card"><div class="highlight-tag">Prediction</div><div class="highlight-main">Simple models go a long way</div><div class="highlight-detail">Age and a simple multimorbidity count explain most of the predictive signal; adding many diagnosis indicators only modestly improves accuracy.</div></div></div></div><div class="workflow-section"><div class="section-heading">Study workflow</div><ul class="workflow-list"><li class="workflow-step"><div class="workflow-number">1</div><div class="workflow-text">Import and clean 2023 MEPS person-level (HC-251) and condition-level (HC-249) files, harmonizing missing values and survey design variables.</div></li><li class="workflow-step"><div class="workflow-number">2</div><div class="workflow-text">Define expenditure groups (Bottom 50%, 50–90%, Top 10%, Top 5%, Top 1%) using survey-weighted quantiles of total expenditures (TOTEXP23).</div></li><li class="workflow-step"><div class="workflow-number">3</div><div class="workflow-text">Describe demographics, income/poverty, insurance, and clinical conditions across cost groups, and fit regression models to predict high-cost status.</div></li><li class="workflow-step"><div class="workflow-number">4</div><div class="workflow-text">Build an interactive Shiny dashboard to allow users to explore expenditure patterns by age, sex, race/ethnicity, income, and insurance coverage.</div></li></ul></div>
+
 
 <div class="info-grid"> <div class="info-card"> <div class="info-card-title"> <i class="fa-solid fa-hospital-user info-card-icon"></i> High-cost patients </div> <div class="info-card-text"> We define expenditure groups (top 1%, 5%, 10%, bottom 50%) using survey-weighted percentiles of total annual expenditures (TOTEXP23). We then describe age, sex, race/ethnicity, income, and insurance across these groups. </div> </div> <div class="info-card"> <div class="info-card-title"> <i class="fa-solid fa-heart-pulse info-card-icon"></i> Conditions & disease burden </div> <div class="info-card-text"> Using the 2023 Medical Conditions file (HC-249) and CCSR categories, we identify the most commonly treated conditions and quantify their contribution to total spending among the top 5% of spenders. </div> </div> <div class="info-card"> <div class="info-card-title"> <i class="fa-solid fa-notes-medical info-card-icon"></i> Services, payers & dashboards </div> <div class="info-card-text"> We decompose expenditures by service type (inpatient, outpatient, ER, prescriptions, home health) and payer (out-of-pocket, private insurance, Medicare, Medicaid), and implement interactive visualizations using <code>rshiny</code> and <code>interactive dashboard</code>. </div> </div> </div> 
 
@@ -322,11 +487,6 @@ h1.title {
    rel="noopener noreferrer">
   <i class="fa-solid fa-chart-column"></i> Interactive Dashboard
 </a>
-
-  <a class="quick-link-btn" href="proposal.html">
-    <i class="fa-regular fa-file-lines"></i>
-    Study aims & background
-  </a>
   
   <a class="quick-link-btn" href="project.html">
     <i class="fa-regular fa-file-lines"></i>
@@ -348,8 +508,5 @@ h1.title {
 </div>
 
 
-
-</a>
-</a>
 
 <div class="section-heading">Team</div><div class="team-strip-title">Project team · Mailman School of Public Health</div> <div class="team-strip"> <div class="team-pill">Charline Gu (jg4891)</div> <div class="team-pill">Yaxuan Deng (yd2810)</div> <div class="team-pill">Yuanyuan Zhang (yz4982)</div> <div class="team-pill">Wen Li (wl3013)</div> </div>

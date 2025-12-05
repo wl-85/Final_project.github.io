@@ -568,6 +568,174 @@ h1.title {
   font-size: 0.9rem;
   padding: 0.45rem 1.1rem;
 }
+
+/* === KEY FINDINGS STRIP === */
+
+.highlight-section {
+  margin: 2rem 0 2.2rem;
+}
+
+.highlight-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.highlight-subtitle {
+  font-size: 0.98rem;
+  color: #555;
+  margin-bottom: 1rem;
+}
+
+.highlight-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.highlight-card {
+  flex: 1 1 260px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 0.9rem 1.1rem;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.highlight-tag {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: #6b7280;
+  margin-bottom: 0.2rem;
+}
+
+.highlight-main {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 0.2rem;
+}
+
+.highlight-detail {
+  font-size: 0.95rem;
+  color: #4b5563;
+}
+
+/* === WORKFLOW / STUDY STEPS === */
+
+.workflow-section {
+  margin: 2.2rem 0 2.4rem;
+}
+
+.workflow-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.workflow-step {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.7rem;
+}
+
+.workflow-number {
+  flex: 0 0 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: #1f77b4;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-right: 0.6rem;
+}
+
+.workflow-text {
+  font-size: 0.97rem;
+  color: #374151;
+}
+
+/* === DASHBOARD PREVIEW === */
+
+.dashboard-preview {
+  margin: 2.2rem 0 2.4rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  align-items: center;
+}
+
+.dashboard-text {
+  flex: 1 1 260px;
+}
+
+.dashboard-img-wrap {
+  flex: 1 1 260px;
+  text-align: center;
+}
+
+.dashboard-img-wrap img {
+  max-width: 100%;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.18);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+/* === Layout refinements for index === */
+
+.stats-strip {
+  margin: 2rem 0 2rem;
+}
+.stats-top-row,
+.stats-bottom-row {
+  justify-content: space-between;
+}
+
+.section-heading {
+  margin-top: 2rem;
+}
+.highlight-section {
+  margin-top: 1.5rem;
+  margin-bottom: 2rem;
+}
+.workflow-section {
+  margin-top: 1.8rem;
+  margin-bottom: 2.2rem;
+}
+
+.highlight-grid,
+.info-grid {
+  align-items: stretch;
+}
+.highlight-card,
+.info-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.quick-links {
+  margin-top: 0.6rem;
+  margin-bottom: 1.6rem;
+}
+
+
+@media (max-width: 900px) {
+  .stats-top-row,
+  .stats-bottom-row,
+  .highlight-grid,
+  .info-grid,
+  .quick-links {
+    gap: 0.8rem;
+  }
+  .stats-strip {
+    margin: 1.6rem 0 1.8rem;
+  }
+}
 </style>
 <div class="hero-section">
 <div class="hero-inner">
@@ -647,12 +815,107 @@ Top 1% · 5% · 10%
 </div>
 </div>
 </div>
+</div>
 <div class="section-heading">
 Project overview
 </div>
 <div class="section-subtitle">
-<p>This page summarizes the key elements of our study. For full details,
-please use the navigation bar or the buttons above.</p>
+This page summarizes the key elements of our study. For full details,
+please use the navigation bar or the buttons below.
+</div>
+<div class="highlight-section">
+<div class="highlight-title">
+Key findings at a glance
+</div>
+<div class="highlight-subtitle">
+We summarize three headline insights from our analysis of 2023 MEPS
+high-cost patients.
+</div>
+<div class="highlight-grid">
+<div class="highlight-card">
+<div class="highlight-tag">
+Concentration
+</div>
+<div class="highlight-main">
+Top 5% of patients ≈ half of all spending
+</div>
+<div class="highlight-detail">
+Expenditures are extremely concentrated: a small group of “hot spotters”
+accounts for a disproportionate share of total costs.
+</div>
+</div>
+<div class="highlight-card">
+<div class="highlight-tag">
+Who are they?
+</div>
+<div class="highlight-main">
+Older &amp; multi-morbid
+</div>
+<div class="highlight-detail">
+High-cost patients are disproportionately adults aged 45+ with multiple
+CCSR conditions across cardiovascular, endocrine, and mental health
+domains.
+</div>
+</div>
+<div class="highlight-card">
+<div class="highlight-tag">
+Prediction
+</div>
+<div class="highlight-main">
+Simple models go a long way
+</div>
+<div class="highlight-detail">
+Age and a simple multimorbidity count explain most of the predictive
+signal; adding many diagnosis indicators only modestly improves
+accuracy.
+</div>
+</div>
+</div>
+</div>
+<div class="workflow-section">
+<div class="section-heading">
+Study workflow
+</div>
+<ul class="workflow-list">
+<li class="workflow-step">
+<div class="workflow-number">
+1
+</div>
+<div class="workflow-text">
+Import and clean 2023 MEPS person-level (HC-251) and condition-level
+(HC-249) files, harmonizing missing values and survey design variables.
+</div>
+</li>
+<li class="workflow-step">
+<div class="workflow-number">
+2
+</div>
+<div class="workflow-text">
+Define expenditure groups (Bottom 50%, 50–90%, Top 10%, Top 5%, Top 1%)
+using survey-weighted quantiles of total expenditures (TOTEXP23).
+</div>
+</li>
+<li class="workflow-step">
+<div class="workflow-number">
+3
+</div>
+<div class="workflow-text">
+Describe demographics, income/poverty, insurance, and clinical
+conditions across cost groups, and fit regression models to predict
+high-cost status.
+</div>
+</li>
+<li class="workflow-step">
+<div class="workflow-number">
+4
+</div>
+<div class="workflow-text">
+Build an interactive Shiny dashboard to allow users to explore
+expenditure patterns by age, sex, race/ethnicity, income, and insurance
+coverage.
+</div>
+</li>
+</ul>
 </div>
 <div class="info-grid">
 <div class="info-card">
@@ -704,9 +967,6 @@ button below):</p>
    target="_blank" 
    rel="noopener noreferrer"> <i class="fa-solid fa-chart-column"></i>
 Interactive Dashboard </a></p>
-<p><a class="quick-link-btn" href="proposal.html">
-<i class="fa-regular fa-file-lines"></i> Study aims &amp; background
-</a></p>
 <p><a class="quick-link-btn" href="project.html">
 <i class="fa-regular fa-file-lines"></i> Regression Models </a></p>
 <p><a class="quick-link-btn" href="Report.html">
@@ -714,7 +974,6 @@ Interactive Dashboard </a></p>
 <p><a class="quick-link-btn" href="team.html">
 <i class="fa-regular fa-user-group"></i> Meet the team </a></p>
 </div>
-<p></a> </a></p>
 <div class="section-heading">
 Team
 </div>
@@ -733,7 +992,6 @@ Yuanyuan Zhang (yz4982)
 </div>
 <div class="team-pill">
 Wen Li (wl3013)
-</div>
 </div>
 </div>
 
