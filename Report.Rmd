@@ -620,7 +620,20 @@ The interactive dashboard can be accessed at [here](https://jinghg.shinyapps.io/
 ## Regression Results
 In the regression analysis, we modeled membership in the Top 5% expenditure group as a binary outcome and examined how demographics, socioeconomic status, and clinical burden are associated with high-cost status. In the baseline survey-weighted logistic model including age group, sex, race/ethnicity, poverty category, insurance coverage, and the number of distinct CCSR condition categories, age and multi-morbidity were the most important predictors. Compared with children and younger adults, individuals aged 45–64 and 65+ had substantially higher odds of being high-cost, and each additional CCSR category was associated with a sizeable increase in the odds of belonging to the Top 5% group. Associations for race/ethnicity and poverty categories were generally small and imprecise after adjustment, and the estimated effect of sex attenuated once clinical covariates were included.
 
+<table style="width:100%; border-collapse:collapse;">
+<tr>
+  <td style="width:50%; text-align:center; padding-right:10px;">
+    <img src="img/top20.png" style="width:95%;" />
+  </td>
+  <td style="width:50%; text-align:center; padding-left:10px;">
+    <img src="img/top20_1.png" style="width:95%;" />
+  </td>
+</tr>
+</table>
+
 We then augmented the baseline model with binary indicators for the most prevalent CCSR categories and constructed a reduced “selected” model retaining only statistically significant diagnosis indicators. Both the full and selected models achieved lower survey-weighted AIC than the baseline model, indicating improved in-sample fit. However, repeated K-fold cross-validation revealed very similar RMSE distributions for the baseline, full, and selected models, with substantial overlap across the three specifications. This pattern suggests that while adding diagnosis-specific indicators improves model fit to the observed data, it yields only modest gains in out-of-sample predictive accuracy. Overall, the count of distinct CCSR categories—the simple multi-morbidity measure—remains the dominant and most stable predictor of high-cost status, whereas individual diagnoses contribute relatively little incremental predictive information once multi-morbidity and age are taken into account.
+
+![](img/reg.png){width=70%}
 
 <br>
 
