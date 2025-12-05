@@ -836,6 +836,355 @@ prop_exp</code></pre>
 <pre class="r"><code>sum(prop_exp)  # ≈ 1</code></pre>
 <pre><code>## [1] 1</code></pre>
 </div>
+<div id="regression" class="section level2">
+<h2>Regression</h2>
+<p>Quantify how demographics, socioeconomic status, and medical
+conditions are associated with belonging to the high-cost group.</p>
+<pre class="r"><code>library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(purrr)
+library(survey)</code></pre>
+<pre class="r"><code># create n_ccsr to record multi-morbidity
+person_ccsr &lt;- cond23_clean %&gt;% 
+  group_by(dupersid) %&gt;% 
+  summarise(
+    n_ccsr = n_distinct(ccsr_main),   # number of diseases with different CCSR 
+    .groups = &quot;drop&quot;
+  ) %&gt;% 
+  mutate(
+    multi_morbidity = if_else(n_ccsr &gt;= 3, 1, 0)  # threshold can be customized
+  )</code></pre>
+<p>Add a few binary disease index for regression covariates.</p>
+<pre class="r"><code>ccsr_counts &lt;- cond23_clean %&gt;% 
+  count(ccsr_main, sort = TRUE)
+
+head(ccsr_counts,10)</code></pre>
+<pre><code>## # A tibble: 10 × 2
+##    ccsr_main     n
+##    &lt;chr&gt;     &lt;int&gt;
+##  1 CIR007     4312
+##  2 END010     3626
+##  3 MUS010     2557
+##  4 END002     1960
+##  5 MBD005     1791
+##  6 MBD002     1557
+##  7 END001     1346
+##  8 MUS006     1345
+##  9 DIG004     1245
+## 10 RSP009     1212</code></pre>
+<pre class="r"><code>ccsr_top20 &lt;- ccsr_counts %&gt;% 
+  slice_max(n, n = 20)
+
+ggplot(ccsr_top20,
+       aes(x = reorder(ccsr_main, n),
+           y = n)) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    x = &quot;CCSR category&quot;,
+    y = &quot;Number of condition records&quot;,
+    title = &quot;Top 20 most common CCSR condition categories (unweighted)&quot;
+  )</code></pre>
+<p><img src="project_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+<pre class="r"><code># recheck using weight
+ccsr_w_counts &lt;- cond23_clean %&gt;% 
+  group_by(ccsr_main) %&gt;% 
+  summarise(
+    w_count = sum(perwt23f, na.rm = TRUE),
+    .groups = &quot;drop&quot;
+  ) %&gt;% 
+  arrange(desc(w_count))
+
+ccsr_w_top20 &lt;- ccsr_w_counts %&gt;% 
+  slice_max(w_count, n = 20)
+
+ggplot(ccsr_w_top20,
+       aes(x = reorder(ccsr_main, w_count),
+           y = w_count)) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    x = &quot;CCSR category&quot;,
+    y = &quot;Weighted count of conditions&quot;,
+    title = &quot;Top 20 CCSR condition categories (weighted by PERWT23F)&quot;
+  )</code></pre>
+<p><img src="project_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<pre class="r"><code># compare top 10 ccsr
+data.frame(
+  unweighted_top10 = ccsr_counts$ccsr_main[1:10],
+  weighted_top10   = ccsr_w_counts$ccsr_main[1:10]
+)</code></pre>
+<pre><code>##    unweighted_top10 weighted_top10
+## 1            CIR007         CIR007
+## 2            END010         END010
+## 3            MUS010         MUS010
+## 4            END002         MBD005
+## 5            MBD005         END002
+## 6            MBD002         MBD002
+## 7            END001         END001
+## 8            MUS006         RSP009
+## 9            DIG004         INJ031
+## 10           RSP009         MUS006</code></pre>
+<pre class="r"><code>ccsr_union &lt;- union(ccsr_counts$ccsr_main[1:10], ccsr_w_counts$ccsr_main[1:10])
+ccsr_union</code></pre>
+<pre><code>##  [1] &quot;CIR007&quot; &quot;END010&quot; &quot;MUS010&quot; &quot;END002&quot; &quot;MBD005&quot; &quot;MBD002&quot; &quot;END001&quot; &quot;MUS006&quot;
+##  [9] &quot;DIG004&quot; &quot;RSP009&quot; &quot;INJ031&quot;</code></pre>
+<pre class="r"><code>ccsr_main_values &lt;- unique(cond23_clean$ccsr_main)
+
+# create binary variable for each ccsr in ccsr_union
+for (disease in ccsr_union) {
+  var_name &lt;- disease
+  # check whether the person has that disease
+  person_ccsr[[var_name]] &lt;- ifelse(
+    person_ccsr$dupersid %in% cond23_clean$dupersid[cond23_clean$ccsr_main == disease],
+    1, 
+    0
+  )
+}</code></pre>
+<pre class="r"><code>fyc23_model &lt;- fyc23_clean %&gt;%
+  left_join(person_ccsr, by = &quot;dupersid&quot;) %&gt;% 
+  mutate(high_cost = ifelse(exp_group == &quot;Top 5%&quot;, 1, 0))
+# set outcome variable as &#39;whether the person is in the top 5% expenses group&#39;
+         
+
+des_model &lt;- svydesign(
+  ids     = ~varpsu,
+  strata  = ~varstr,
+  weights = ~perwt23f,
+  data    = fyc23_model,
+  nest    = TRUE
+)</code></pre>
+<div id="feature-selection" class="section level3">
+<h3>feature selection</h3>
+<pre class="r"><code># baseline model
+baseline_formula &lt;- high_cost ~ 
+  age_cat4 + sex_f + race4 + povcat_f + inscov_f + n_ccsr
+
+model_baseline &lt;- svyglm(
+  baseline_formula,
+  design = des_model,
+  family = quasibinomial()
+)
+summary(model_baseline)</code></pre>
+<pre><code>## 
+## Call:
+## svyglm(formula = baseline_formula, design = des_model, family = quasibinomial())
+## 
+## Survey design:
+## svydesign(ids = ~varpsu, strata = ~varstr, weights = ~perwt23f, 
+##     data = fyc23_model, nest = TRUE)
+## 
+## Coefficients:
+##                        Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)           -4.104708   0.227373 -18.053  &lt; 2e-16 ***
+## age_cat418-44         -0.007022   0.237934  -0.030  0.97650    
+## age_cat445-64          0.677880   0.220487   3.074  0.00253 ** 
+## age_cat465+            0.480386   0.225351   2.132  0.03474 *  
+## sex_fFemale           -0.213897   0.098997  -2.161  0.03239 *  
+## race4NH Black          0.022008   0.157238   0.140  0.88888    
+## race4Hispanic         -0.163021   0.132912  -1.227  0.22201    
+## race4NH Asian/Other   -0.067057   0.168351  -0.398  0.69099    
+## povcat_fNear-poor     -0.060137   0.191515  -0.314  0.75397    
+## povcat_fLow income    -0.157595   0.219433  -0.718  0.47381    
+## povcat_fMiddle income -0.210476   0.161846  -1.300  0.19553    
+## povcat_fHigh income   -0.061194   0.160228  -0.382  0.70309    
+## inscov_fPublic only   -0.032550   0.086140  -0.378  0.70609    
+## inscov_fUninsured     -0.937976   0.464114  -2.021  0.04515 *  
+## n_ccsr                 0.214228   0.011780  18.185  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for quasibinomial family taken to be 0.8830159)
+## 
+## Number of Fisher Scoring iterations: 6</code></pre>
+<pre class="r"><code># full model
+ccsr_vars &lt;- c(&quot;CIR007&quot;,&quot;END010&quot;,&quot;MUS010&quot;,&quot;END002&quot;,&quot;MBD005&quot;,          &quot;MBD002&quot;,&quot;END001&quot;,&quot;MUS006&quot;,&quot;DIG004&quot;,&quot;RSP009&quot;,&quot;INJ031&quot;)
+
+full_formula &lt;- update(
+  baseline_formula,
+  paste(&quot;. ~ . +&quot;, paste(ccsr_vars, collapse = &quot; + &quot;))
+)
+
+model_full &lt;- svyglm(
+  full_formula,
+  design = des_model,
+  family = quasibinomial()
+)
+summary(model_full)</code></pre>
+<pre><code>## 
+## Call:
+## svyglm(formula = full_formula, design = des_model, family = quasibinomial())
+## 
+## Survey design:
+## svydesign(ids = ~varpsu, strata = ~varstr, weights = ~perwt23f, 
+##     data = fyc23_model, nest = TRUE)
+## 
+## Coefficients:
+##                        Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)           -4.142628   0.228470 -18.132  &lt; 2e-16 ***
+## age_cat418-44          0.102474   0.240611   0.426 0.670882    
+## age_cat445-64          0.831983   0.217967   3.817 0.000207 ***
+## age_cat465+            0.594221   0.231250   2.570 0.011292 *  
+## sex_fFemale           -0.156823   0.109086  -1.438 0.152913    
+## race4NH Black         -0.042759   0.167079  -0.256 0.798411    
+## race4Hispanic         -0.224776   0.135783  -1.655 0.100218    
+## race4NH Asian/Other   -0.093139   0.172478  -0.540 0.590104    
+## povcat_fNear-poor     -0.078894   0.199010  -0.396 0.692427    
+## povcat_fLow income    -0.148990   0.220808  -0.675 0.501016    
+## povcat_fMiddle income -0.232388   0.159920  -1.453 0.148556    
+## povcat_fHigh income   -0.088322   0.158463  -0.557 0.578221    
+## inscov_fPublic only   -0.021281   0.088128  -0.241 0.809563    
+## inscov_fUninsured     -0.948724   0.462411  -2.052 0.042177 *  
+## n_ccsr                 0.266333   0.015616  17.056  &lt; 2e-16 ***
+## CIR007                -0.194120   0.120247  -1.614 0.108842    
+## END010                -0.443579   0.116416  -3.810 0.000212 ***
+## MUS010                -0.167892   0.102078  -1.645 0.102402    
+## END002                 0.335854   0.099413   3.378 0.000959 ***
+## MBD005                -0.377359   0.147979  -2.550 0.011912 *  
+## MBD002                -0.398973   0.146619  -2.721 0.007383 ** 
+## END001                -0.342818   0.137000  -2.502 0.013559 *  
+## MUS006                 0.002394   0.141474   0.017 0.986525    
+## DIG004                -0.031370   0.141049  -0.222 0.824340    
+## RSP009                -0.363132   0.141636  -2.564 0.011472 *  
+## INJ031                -0.125316   0.150305  -0.834 0.405932    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for quasibinomial family taken to be 0.8593806)
+## 
+## Number of Fisher Scoring iterations: 6</code></pre>
+<pre class="r"><code># model with selected significant variables
+selected_vars &lt;- c(
+  &quot;age_cat4&quot;,
+  &quot;sex_f&quot;,
+  &quot;povcat_f&quot;,
+  &quot;inscov_f&quot;,
+  &quot;n_ccsr&quot;,
+  &quot;END010&quot;,&quot;END002&quot;,&quot;MBD005&quot;,&quot;MBD002&quot;,&quot;END001&quot;,&quot;RSP009&quot;
+)
+
+full_formula2 &lt;- as.formula(
+  paste(&quot;high_cost ~&quot;, paste(selected_vars, collapse = &quot; + &quot;))
+)
+
+
+model_selected &lt;- svyglm(
+  full_formula2,
+  design = des_model,
+  family = quasibinomial()
+)
+
+summary(model_selected)</code></pre>
+<pre><code>## 
+## Call:
+## svyglm(formula = full_formula2, design = des_model, family = quasibinomial())
+## 
+## Survey design:
+## svydesign(ids = ~varpsu, strata = ~varstr, weights = ~perwt23f, 
+##     data = fyc23_model, nest = TRUE)
+## 
+## Coefficients:
+##                       Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)           -4.21580    0.22704 -18.568  &lt; 2e-16 ***
+## age_cat418-44          0.08623    0.24094   0.358 0.720971    
+## age_cat445-64          0.77682    0.22059   3.522 0.000579 ***
+## age_cat465+            0.54704    0.23010   2.377 0.018787 *  
+## sex_fFemale           -0.14930    0.10481  -1.424 0.156550    
+## povcat_fNear-poor     -0.08477    0.19680  -0.431 0.667312    
+## povcat_fLow income    -0.13499    0.22071  -0.612 0.541791    
+## povcat_fMiddle income -0.21729    0.16047  -1.354 0.177884    
+## povcat_fHigh income   -0.05600    0.16264  -0.344 0.731098    
+## inscov_fPublic only   -0.03292    0.08812  -0.374 0.709272    
+## inscov_fUninsured     -0.99797    0.46114  -2.164 0.032151 *  
+## n_ccsr                 0.25573    0.01336  19.143  &lt; 2e-16 ***
+## END010                -0.48306    0.11465  -4.213 4.48e-05 ***
+## END002                 0.31964    0.09942   3.215 0.001620 ** 
+## MBD005                -0.34885    0.14549  -2.398 0.017811 *  
+## MBD002                -0.37393    0.14539  -2.572 0.011153 *  
+## END001                -0.32376    0.13477  -2.402 0.017601 *  
+## RSP009                -0.35444    0.14142  -2.506 0.013343 *  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for quasibinomial family taken to be 0.8664482)
+## 
+## Number of Fisher Scoring iterations: 6</code></pre>
+<pre class="r"><code>AIC(model_baseline)</code></pre>
+<pre><code>##       eff.p         AIC    deltabar 
+##   17.758600 4840.253423    1.268471</code></pre>
+<pre class="r"><code>AIC(model_full)</code></pre>
+<pre><code>##       eff.p         AIC    deltabar 
+##   31.453566 4796.998920    1.258143</code></pre>
+<pre class="r"><code>AIC(model_selected)</code></pre>
+<pre><code>##       eff.p         AIC    deltabar 
+##   21.374355 4786.736891    1.257315</code></pre>
+<pre class="r"><code># cv validation
+cv_rmse &lt;- function(formula, data, K = 5) {
+  n &lt;- nrow(data)
+  folds &lt;- sample(rep(1:K, length.out = n))
+  
+  rmse_vec &lt;- numeric(K)
+  
+  for (k in 1:K) {
+    train &lt;- data[folds != k, ]
+    test  &lt;- data[folds == k, ]
+    
+    fit &lt;- glm(formula, data = train, family = binomial())
+    
+  
+    p_hat &lt;- predict(fit, newdata = test, type = &quot;response&quot;)
+    
+    # RMSE between predicted probability and actual 0/1
+    rmse_vec[k] &lt;- sqrt(mean((p_hat - test$high_cost)^2))
+  }
+  
+  rmse_vec
+}</code></pre>
+<pre class="r"><code>set.seed(1234)
+n_rep &lt;- 10
+K &lt;- 5
+
+df_cv &lt;- fyc23_model %&gt;%
+  select(
+    high_cost,
+    age_cat4, sex_f, race4, povcat_f, inscov_f, n_ccsr,
+    CIR007, END010, MUS010, END002, MBD005, MBD002, END001, MUS006, DIG004, RSP009, INJ031
+  )%&gt;%
+  drop_na() %&gt;%                            
+  mutate(
+    high_cost = as.numeric(high_cost),      
+   
+  )
+
+cv_results &lt;- map_dfr(1:n_rep, ~{
+  tibble(
+    model = &quot;Baseline&quot;,
+    rmse  = cv_rmse(baseline_formula, df_cv, K = K)
+  ) %&gt;%
+    bind_rows(
+      tibble(
+        model = &quot;Full&quot;,
+        rmse  = cv_rmse(full_formula, df_cv, K = K)
+      ),
+      tibble(
+        model = &quot;Selected&quot;,
+        rmse  = cv_rmse(full_formula2, df_cv, K = K)
+      )
+    )
+})</code></pre>
+<pre class="r"><code>ggplot(cv_results, aes(x = model, y = rmse)) +
+  geom_violin(trim = FALSE, fill = NA, color = &quot;lightblue&quot;) +
+  geom_boxplot(width = 0.15, fill = &quot;white&quot;, outlier.size = 0.5) +
+  labs(
+    x = NULL,
+    y = &quot;Cross-validated RMSE&quot;,
+    title = &quot;Cross-validated prediction error for three models&quot;
+  ) +
+  theme_minimal()</code></pre>
+<p><img src="project_files/figure-html/unnamed-chunk-27-1.png" width="672" /></p>
+</div>
+</div>
 
 
 

@@ -402,7 +402,46 @@ more intuitive and accessible way.</p>
 </div>
 <div id="initial-question" class="section level2">
 <h2>Initial Question</h2>
-<p>edit here</p>
+<p>We initially aimed to answer the following key questions:</p>
+<ol style="list-style-type: decimal">
+<li><p>Who are the patients that incur the highest healthcare
+expenditures in 2023 (top 1%, top 5%, top 10%) within the U.S. as
+captured by MEPS?</p></li>
+<li><p>What demographic and socioeconomic characteristics are associated
+with being high-cost?</p></li>
+<li><p>Using CCSR classification, what is the role of multimorbidity and
+major chronic conditions in predicting whether someone is
+high-cost?</p></li>
+</ol>
+<p>During the process of analysis, our questions became more concrete.
+For example, we extend from descriptive to predictive framing, exploring
+how well we can predict whether a person is high-cost using
+demographics, income/poverty, insurance, and multimorbidity. In
+addition, while generating descriptive statistics, we realized that many
+patterns were more easily understood when visualized interactively. This
+led us to develop a <strong>Shiny dashboard</strong>, allowing users
+to:</p>
+<ul>
+<li>select age group, insurance, and sex</li>
+<li>dynamically view expenditure distributions</li>
+<li>compare demographic subgroups and explore how spending varies across
+key characteristics</li>
+</ul>
+<p>Throughout the modeling and exploratory analysis process, several
+deeper questions arose. We started to think about what is the practical
+value of the predictive model. Even if certain variables statistically
+improve prediction of high-cost status, does the model improve enough to
+matter for policy or care management? Our cross-validated RMSE
+comparison across baseline, full, and selected models pushed us to
+reflect on whether the added complexity yields meaningful practical
+improvement. But since the prevalence of <code>high-cost</code> is too
+low and noises exist, how to make such predictions practically
+meaningful remains an open question.</p>
+<p>Together, these new questions extend our original motivation of
+understanding “who” the high-cost patients are toward how we might use
+routinely available information (demographics, income, insurance,
+diagnoses) to identify and prioritize them for targeted
+interventions.</p>
 <hr />
 </div>
 <div id="data-sources-and-access" class="section level2">
@@ -1069,7 +1108,7 @@ c(
   ins_minus_total  = sum_ins  - total_pop
 )</code></pre>
 <pre><code>##  age_minus_total race_minus_total  pov_minus_total  ins_minus_total 
-##                0                0                0                0</code></pre>
+##    -5.960464e-07     5.960464e-08    -9.536743e-07     0.000000e+00</code></pre>
 <pre class="r"><code>tab_age</code></pre>
 <pre><code>## age_cat4
 ##      0-17     18-44     45-64       65+ 

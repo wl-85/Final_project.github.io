@@ -22,8 +22,23 @@ In addition, we draw on tools and techniques introduced in class, particularly f
 ***
 ## Initial Question
 
-edit here
+We initially aimed to answer the following key questions:
 
+1. Who are the patients that incur the highest healthcare expenditures in 2023 (top 1%, top 5%, top 10%) within the U.S. as captured by MEPS?
+
+2. What demographic and socioeconomic characteristics are associated with being high-cost?
+
+3. Using CCSR classification, what is the role of multimorbidity and major chronic conditions in predicting whether someone is high-cost?
+
+During the process of analysis, our questions became more concrete. For example, we extend from descriptive to predictive framing, exploring how well we can predict whether a person is high-cost using demographics, income/poverty, insurance, and multimorbidity. In addition, while generating descriptive statistics, we realized that many patterns were more easily understood when visualized interactively. This led us to develop a **Shiny dashboard**, allowing users to:
+
+   - select age group, insurance, and sex
+   - dynamically view expenditure distributions
+   - compare demographic subgroups and explore how spending varies across key characteristics
+
+Throughout the modeling and exploratory analysis process, several deeper questions arose. We started to think about what is the practical value of the predictive model. Even if certain variables  statistically improve prediction of high-cost status, does the model improve enough to matter for policy or care management? Our cross-validated RMSE comparison across baseline, full, and selected models pushed us to reflect on whether the added complexity yields meaningful practical improvement. But since the prevalence of `high-cost` is too low and noises exist, how to make such predictions practically meaningful remains an open question.
+
+Together, these new questions extend our original motivation of understanding “who” the high-cost patients are toward how we might use routinely available information (demographics, income, insurance, diagnoses) to identify and prioritize them for targeted interventions.
 
 ***
 ## Data sources and access
