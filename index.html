@@ -795,7 +795,7 @@ for technical and non-technical stakeholders.
 Sample size
 </div>
 <div class="stats-pill-value">
-≈ 18,900 individuals
+≈ 18,500 individuals
 </div>
 </div>
 <div class="stats-pill">
@@ -837,7 +837,7 @@ high-cost patients.
 Concentration
 </div>
 <div class="highlight-main">
-Top 5% of patients ≈ half of all spending
+Spending is concentrated in high-cost groups
 </div>
 <div class="highlight-detail">
 Expenditures are extremely concentrated: a small group of “hot spotters”
@@ -924,10 +924,11 @@ coverage.
 patients
 </div>
 <div class="info-card-text">
-We define expenditure groups (top 1%, 5%, 10%, bottom 50%) using
-survey-weighted percentiles of total annual expenditures (TOTEXP23). We
-then describe age, sex, race/ethnicity, income, and insurance across
-these groups.
+We define high-cost expenditure groups (Top 1%, 5%, 10%, Bottom 50%)
+using survey-weighted percentiles of total annual expenditures
+(TOTEXP23) under the MEPS design. We then compare age, sex,
+race/ethnicity, income, and insurance coverage across these groups to
+characterize who appears in each segment.
 </div>
 </div>
 <div class="info-card">
@@ -936,9 +937,11 @@ these groups.
 disease burden
 </div>
 <div class="info-card-text">
-Using the 2023 Medical Conditions file (HC-249) and CCSR categories, we
-identify the most commonly treated conditions and quantify their
-contribution to total spending among the top 5% of spenders.
+Using the 2023 Medical Conditions file (HC-249) and CCSR codes, we
+summarize diagnoses at the person level and construct a simple
+multimorbidity count. We then examine how key condition groups and
+disease burden vary across expenditure groups, focusing on high-cost
+patients.
 </div>
 </div>
 <div class="info-card">
@@ -947,10 +950,12 @@ contribution to total spending among the top 5% of spenders.
 payers &amp; dashboards
 </div>
 <div class="info-card-text">
-We decompose expenditures by service type (inpatient, outpatient, ER,
-prescriptions, home health) and payer (out-of-pocket, private insurance,
-Medicare, Medicaid), and implement interactive visualizations using
-<code>rshiny</code> and <code>interactive dashboard</code>.
+We decompose annual spending by service type (inpatient, outpatient, ER,
+prescriptions, home health) and by payer (out-of-pocket, private
+insurance, Medicare, Medicaid) to highlight where money is being spent.
+These summaries feed into an interactive <code>shiny</code> dashboard
+that allows users to explore expenditure patterns by demographic and
+insurance profiles.
 </div>
 </div>
 </div>

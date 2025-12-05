@@ -361,6 +361,13 @@ Yuanyuan Zhang (yz4982), Wen Li (wl3013)</h4>
 </div>
 
 
+<style>
+h4.author {
+  font-size: 12px;
+  font-weight: 400;
+  color: #777777;
+}
+</style>
 <hr />
 <div id="motivation" class="section level2">
 <h2>Motivation</h2>
@@ -468,6 +475,7 @@ Clinical Classifications Software Refined (CCSR) codes.</p></li>
 which implements the recommended MEPS data-reading workflow and
 preserves variable formats. For convenience in downstream analysis, we
 converted all variable names to lowercase immediately after import.</p>
+<p><br></p>
 <div id="unit-of-analysis-and-key-variables" class="section level3">
 <h3>Unit of analysis and key variables</h3>
 <p>The primary unit of analysis in this project is the
@@ -515,6 +523,7 @@ single primary condition code per record.</li>
 <p>These variables form the basis for defining high-cost groups,
 describing population characteristics, and identifying the most commonly
 treated conditions among high-expenditure patients.</p>
+<p><br></p>
 </div>
 <div id="cleaning-and-preparation-of-the-person-level-file-hc-251"
 class="section level3">
@@ -560,6 +569,7 @@ design</li>
 <p>All weighted estimates in the project—such as proportions, means, and
 quantiles—are computed under this survey design.</p></li>
 </ol>
+<p><br></p>
 </div>
 <div id="construction-of-demographic-and-socioeconomic-categories"
 class="section level3">
@@ -632,6 +642,7 @@ We recode <code>inscov23</code> into:</p>
 <p>After creating these factors, we reconstruct the survey design object
 so that all downstream analyses use the updated categorical
 variables.</p>
+<p><br></p>
 </div>
 <div id="defining-expenditure-groups-top-1-top-5-top-10-bottom-50"
 class="section level3">
@@ -680,6 +691,7 @@ the Top 1% and Top 5%.</p>
 <code>fyc23_clean</code> with <code>exp_group</code> included, enabling
 direct computation of weighted distributions of demographic and clinical
 characteristics within each expenditure group.</p>
+<p><br></p>
 </div>
 <div id="cleaning-and-preparation-of-the-conditions-file-hc-249"
 class="section level3">
@@ -727,6 +739,7 @@ merged with the person-level dataset by <code>dupersid</code>, allowing
 us to describe the most common CCSR categories among individuals in the
 Top 1%, Top 5%, and other expenditure groups.</p></li>
 </ol>
+<p><br></p>
 </div>
 <div id="quality-checks" class="section level3">
 <h3>Quality checks</h3>
@@ -1337,15 +1350,18 @@ href="https://jinghg.shinyapps.io/final_projectgithub/">here</a>.</p>
 <hr />
 </div>
 </div>
-<div id="additional-analysis-survey-weighted-regression-modeling"
-class="section level2">
-<h2>Additional Analysis: Survey-Weighted Regression Modeling</h2>
+<div id="additional-analysis" class="section level2">
+<h2>Additional Analysis</h2>
+<div id="survey-weighted-regression-modeling" class="section level3">
+<h3>Survey-Weighted Regression Modeling</h3>
 <p>To complement our descriptive analyses, we conducted a series of
 survey-weighted logistic regression models to examine factors associated
 with being a high-cost individual (defined as the top 5% of total
 expenditures based on survey-weighted percentiles).</p>
 <p>All models were estimated using the MEPS complex survey design,
 incorporating strata, PSUs, and person-level weights.</p>
+<p><br></p>
+</div>
 <div id="model-1-baseline-demographic-and-socioeconomic-predictors"
 class="section level3">
 <h3>Model 1: Baseline demographic and socioeconomic predictors</h3>
@@ -1449,6 +1465,7 @@ highlighting the vulnerability of those without financial protection.
 Finally, the <code>number of CCSR condition categories</code>, our
 measure or multimorbidity, was significant and demonstrated the largest
 effect size.</p>
+<p><br></p>
 </div>
 <div id="model-2-full-model-including-major-ccsr-condition-indicators"
 class="section level3">
@@ -1625,6 +1642,7 @@ anxiety disorders (<code>MBD005</code>), thyroid disorders
 associations with higher healthcare spending.</p>
 <p>Compared with <code>Model 1</code>, <code>Female</code> is no longer
 a significant predictors, while others ramain significant.</p>
+<p><br></p>
 </div>
 <div id="model-3-selected-model-with-significant-predictors"
 class="section level3">
@@ -1762,29 +1780,25 @@ section.</em></p>
 <strong>Click to show / hide full regression modeling code</strong>
 </summary>
 <p><br></p>
-<pre class="r"><code># Load required packages
+<pre class="r"><code>## Regression
 library(dplyr)
 library(ggplot2)
 library(tidyr)
 library(purrr)
 library(survey)
 
-## ------------------------------------------------------------------
-## 1. Construct multimorbidity measures and disease indicators
-## ------------------------------------------------------------------
-
-# create n_ccsr to record multi-morbidity
+## ---- create multimorbidity (person_ccsr) ----
 person_ccsr &lt;- cond23_clean %&gt;% 
   group_by(dupersid) %&gt;% 
   summarise(
-    n_ccsr = n_distinct(ccsr_main),   # number of diseases with different CCSR 
+    n_ccsr = n_distinct(ccsr_main),   # number of distinct CCSR categories
     .groups = &quot;drop&quot;
   ) %&gt;% 
   mutate(
     multi_morbidity = if_else(n_ccsr &gt;= 3, 1, 0)  # threshold can be customized
   )
 
-# counts of conditions by CCSR code
+## ---- CCSR frequency (unweighted) ----
 ccsr_counts &lt;- cond23_clean %&gt;% 
   count(ccsr_main, sort = TRUE)
 
@@ -1802,8 +1816,7 @@ head(ccsr_counts, 10)</code></pre>
 ##  8 MUS006     1345
 ##  9 DIG004     1245
 ## 10 RSP009     1212</code></pre>
-<pre class="r"><code># top 20 (unweighted)
-ccsr_top20 &lt;- ccsr_counts %&gt;% 
+<pre class="r"><code>ccsr_top20 &lt;- ccsr_counts %&gt;% 
   slice_max(n, n = 20)
 
 ggplot(ccsr_top20,
@@ -1817,7 +1830,7 @@ ggplot(ccsr_top20,
     title = &quot;Top 20 most common CCSR condition categories (unweighted)&quot;
   )</code></pre>
 <p><img src="Report_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
-<pre class="r"><code># recheck using weights
+<pre class="r"><code>## ---- CCSR frequency (weighted) ----
 ccsr_w_counts &lt;- cond23_clean %&gt;% 
   group_by(ccsr_main) %&gt;% 
   summarise(
@@ -1840,7 +1853,7 @@ ggplot(ccsr_w_top20,
     title = &quot;Top 20 CCSR condition categories (weighted by PERWT23F)&quot;
   )</code></pre>
 <p><img src="Report_files/figure-html/unnamed-chunk-20-2.png" width="672" /></p>
-<pre class="r"><code># compare top 10 CCSR codes (unweighted vs weighted)
+<pre class="r"><code>## ---- compare top10 CCSR: unweighted vs weighted ----
 data.frame(
   unweighted_top10 = ccsr_counts$ccsr_main[1:10],
   weighted_top10   = ccsr_w_counts$ccsr_main[1:10]
@@ -1856,16 +1869,16 @@ data.frame(
 ## 8            MUS006         RSP009
 ## 9            DIG004         INJ031
 ## 10           RSP009         MUS006</code></pre>
-<pre class="r"><code>ccsr_union &lt;- union(ccsr_counts$ccsr_main[1:10], ccsr_w_counts$ccsr_main[1:10])
+<pre class="r"><code>ccsr_union &lt;- union(
+  ccsr_counts$ccsr_main[1:10],
+  ccsr_w_counts$ccsr_main[1:10]
+)
 ccsr_union</code></pre>
 <pre><code>##  [1] &quot;CIR007&quot; &quot;END010&quot; &quot;MUS010&quot; &quot;END002&quot; &quot;MBD005&quot; &quot;MBD002&quot; &quot;END001&quot; &quot;MUS006&quot;
 ##  [9] &quot;DIG004&quot; &quot;RSP009&quot; &quot;INJ031&quot;</code></pre>
-<pre class="r"><code># create binary indicator for each CCSR in ccsr_union
-ccsr_main_values &lt;- unique(cond23_clean$ccsr_main)
-
+<pre class="r"><code>## ---- create binary disease indicators in person_ccsr ----
 for (disease in ccsr_union) {
   var_name &lt;- disease
-  # check whether the person has that disease
   person_ccsr[[var_name]] &lt;- ifelse(
     person_ccsr$dupersid %in% cond23_clean$dupersid[cond23_clean$ccsr_main == disease],
     1, 
@@ -1873,16 +1886,14 @@ for (disease in ccsr_union) {
   )
 }
 
-## ------------------------------------------------------------------
-## 2. Merge person-level data and build survey design for modeling
-## ------------------------------------------------------------------
-
+## ---- merge to FYC file and define high_cost ----
 fyc23_model &lt;- fyc23_clean %&gt;%
   left_join(person_ccsr, by = &quot;dupersid&quot;) %&gt;% 
   mutate(
-    high_cost = ifelse(exp_group == &quot;Top 5%&quot;, 1, 0)  # Top 5% vs others
+    high_cost = ifelse(exp_group == &quot;Top 5%&quot;, 1, 0)    # outcome: in top 5% vs others
   )
 
+## ---- survey design object ----
 des_model &lt;- svydesign(
   ids     = ~varpsu,
   strata  = ~varstr,
@@ -1891,11 +1902,7 @@ des_model &lt;- svydesign(
   nest    = TRUE
 )
 
-## ------------------------------------------------------------------
-## 3. Logistic regression models and feature selection
-## ------------------------------------------------------------------
-
-# baseline model
+## ---- baseline model ----
 baseline_formula &lt;- high_cost ~ 
   age_cat4 + sex_f + race4 + povcat_f + inscov_f + n_ccsr
 
@@ -1936,7 +1943,7 @@ summary(model_baseline)</code></pre>
 ## (Dispersion parameter for quasibinomial family taken to be 0.8830159)
 ## 
 ## Number of Fisher Scoring iterations: 6</code></pre>
-<pre class="r"><code># full model with specific high-prevalence CCSR indicators
+<pre class="r"><code>## ---- full model with top CCSR indicators ----
 ccsr_vars &lt;- c(
   &quot;CIR007&quot;,&quot;END010&quot;,&quot;MUS010&quot;,&quot;END002&quot;,&quot;MBD005&quot;,
   &quot;MBD002&quot;,&quot;END001&quot;,&quot;MUS006&quot;,&quot;DIG004&quot;,&quot;RSP009&quot;,&quot;INJ031&quot;
@@ -1995,11 +2002,10 @@ summary(model_full)</code></pre>
 ## (Dispersion parameter for quasibinomial family taken to be 0.8593806)
 ## 
 ## Number of Fisher Scoring iterations: 6</code></pre>
-<pre class="r"><code># reduced model with selected significant CCSR indicators
+<pre class="r"><code>## ---- selected model (significant variables) ----
 selected_vars &lt;- c(
   &quot;age_cat4&quot;,
   &quot;sex_f&quot;,
-  &quot;povcat_f&quot;,
   &quot;inscov_f&quot;,
   &quot;n_ccsr&quot;,
   &quot;END010&quot;,&quot;END002&quot;,&quot;MBD005&quot;,&quot;MBD002&quot;,&quot;END001&quot;,&quot;RSP009&quot;
@@ -2024,32 +2030,28 @@ summary(model_selected)</code></pre>
 ##     data = fyc23_model, nest = TRUE)
 ## 
 ## Coefficients:
-##                       Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)           -4.21580    0.22704 -18.568  &lt; 2e-16 ***
-## age_cat418-44          0.08623    0.24094   0.358 0.720971    
-## age_cat445-64          0.77682    0.22059   3.522 0.000579 ***
-## age_cat465+            0.54704    0.23010   2.377 0.018787 *  
-## sex_fFemale           -0.14930    0.10481  -1.424 0.156550    
-## povcat_fNear-poor     -0.08477    0.19680  -0.431 0.667312    
-## povcat_fLow income    -0.13499    0.22071  -0.612 0.541791    
-## povcat_fMiddle income -0.21729    0.16047  -1.354 0.177884    
-## povcat_fHigh income   -0.05600    0.16264  -0.344 0.731098    
-## inscov_fPublic only   -0.03292    0.08812  -0.374 0.709272    
-## inscov_fUninsured     -0.99797    0.46114  -2.164 0.032151 *  
-## n_ccsr                 0.25573    0.01336  19.143  &lt; 2e-16 ***
-## END010                -0.48306    0.11465  -4.213 4.48e-05 ***
-## END002                 0.31964    0.09942   3.215 0.001620 ** 
-## MBD005                -0.34885    0.14549  -2.398 0.017811 *  
-## MBD002                -0.37393    0.14539  -2.572 0.011153 *  
-## END001                -0.32376    0.13477  -2.402 0.017601 *  
-## RSP009                -0.35444    0.14142  -2.506 0.013343 *  
+##                     Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)         -4.31773    0.20571 -20.989  &lt; 2e-16 ***
+## age_cat418-44        0.08445    0.24168   0.349 0.727272    
+## age_cat445-64        0.78462    0.22112   3.548 0.000524 ***
+## age_cat465+          0.54424    0.22584   2.410 0.017221 *  
+## sex_fFemale         -0.15467    0.10382  -1.490 0.138489    
+## inscov_fPublic only -0.03556    0.08779  -0.405 0.686059    
+## inscov_fUninsured   -1.02154    0.46093  -2.216 0.028245 *  
+## n_ccsr               0.25654    0.01327  19.329  &lt; 2e-16 ***
+## END010              -0.48358    0.11477  -4.214 4.41e-05 ***
+## END002               0.31291    0.09915   3.156 0.001949 ** 
+## MBD005              -0.34744    0.14565  -2.385 0.018365 *  
+## MBD002              -0.37714    0.14576  -2.587 0.010662 *  
+## END001              -0.32440    0.13471  -2.408 0.017301 *  
+## RSP009              -0.34996    0.14209  -2.463 0.014956 *  
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## (Dispersion parameter for quasibinomial family taken to be 0.8664482)
+## (Dispersion parameter for quasibinomial family taken to be 0.8704885)
 ## 
 ## Number of Fisher Scoring iterations: 6</code></pre>
-<pre class="r"><code># AIC comparison (survey-weighted effective AIC)
+<pre class="r"><code>## ---- compare AIC ----
 AIC(model_baseline)</code></pre>
 <pre><code>##       eff.p         AIC    deltabar 
 ##   17.758600 4840.253423    1.268471</code></pre>
@@ -2058,12 +2060,8 @@ AIC(model_baseline)</code></pre>
 ##   31.453566 4796.998920    1.258143</code></pre>
 <pre class="r"><code>AIC(model_selected)</code></pre>
 <pre><code>##       eff.p         AIC    deltabar 
-##   21.374355 4786.736891    1.257315</code></pre>
-<pre class="r"><code>## ------------------------------------------------------------------
-## 4. Cross-validated prediction error (RMSE)
-## ------------------------------------------------------------------
-
-# K-fold CV function for RMSE
+##   16.489108 4780.365412    1.268393</code></pre>
+<pre class="r"><code>## ---- CV helper function (simple glm, no survey weights) ----
 cv_rmse &lt;- function(formula, data, K = 5) {
   n &lt;- nrow(data)
   folds &lt;- sample(rep(1:K, length.out = n))
@@ -2076,18 +2074,16 @@ cv_rmse &lt;- function(formula, data, K = 5) {
     
     fit &lt;- glm(formula, data = train, family = binomial())
     
-    # predicted probability
     p_hat &lt;- predict(fit, newdata = test, type = &quot;response&quot;)
-    
-    # RMSE between predicted probability and actual 0/1
     rmse_vec[k] &lt;- sqrt(mean((p_hat - test$high_cost)^2))
   }
   
   rmse_vec
 }
 
+## ---- prepare data for CV ----
 set.seed(1234)
-n_rep &lt;- 10
+n_rep &lt;- 100
 K &lt;- 5
 
 df_cv &lt;- fyc23_model %&gt;%
@@ -2101,6 +2097,7 @@ df_cv &lt;- fyc23_model %&gt;%
     high_cost = as.numeric(high_cost)
   )
 
+## ---- run CV for three models ----
 cv_results &lt;- map_dfr(1:n_rep, ~{
   tibble(
     model = &quot;Baseline&quot;,
@@ -2118,7 +2115,20 @@ cv_results &lt;- map_dfr(1:n_rep, ~{
     )
 })
 
-# visualize RMSE distributions for the three models
+## ---- summarise CV results ----
+cv_summary &lt;- cv_results %&gt;%
+  group_by(model) %&gt;%
+  summarise(mean_rmse = mean(rmse)) %&gt;%
+  arrange(model)
+
+cv_summary</code></pre>
+<pre><code>## # A tibble: 3 × 2
+##   model    mean_rmse
+##   &lt;chr&gt;        &lt;dbl&gt;
+## 1 Baseline     0.234
+## 2 Full         0.234
+## 3 Selected     0.233</code></pre>
+<pre class="r"><code>## ---- plot CV RMSE ----
 ggplot(cv_results, aes(x = model, y = rmse)) +
   geom_violin(trim = FALSE, fill = NA, color = &quot;lightblue&quot;) +
   geom_boxplot(width = 0.15, fill = &quot;white&quot;, outlier.size = 0.5) +

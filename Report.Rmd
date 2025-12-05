@@ -8,6 +8,15 @@ output:
     toc_depth: 3
 ---
 
+<style>
+h4.author {
+  font-size: 12px;
+  font-weight: 400;
+  color: #777777;
+}
+</style>
+
+
 ***
 ## Motivation
 In 2023, healthcare spending in the United States accounted for 17.6% of the national GDP, totaling approximately $4.9 trillion. Despite this immense expenditure, millions of Americans continue to struggle with chronic diseases, and healthcare delivery remains highly fragmented. This inefficiency not only strains the system financially but also results in poorer outcomes for those who need care the most. One of the central challenges is the “hot spotters” problem—a small subset of patients who incur the highest costs often receive the least coordinated and least effective care. Understanding who these patients are, what conditions they have, and how their costs evolve over time is critical for developing targeted interventions that improve health outcomes while reducing unnecessary spending.
@@ -53,6 +62,8 @@ Our analysis uses publicly available data from the Medical Expenditure Panel Sur
 
 Both files were downloaded from the MEPS website as standardized `.ssp` files. We imported them into R using the `MEPS` R package and the `read_MEPS()` function, which implements the recommended MEPS data-reading workflow and preserves variable formats. For convenience in downstream analysis, we converted all variable names to lowercase immediately after import.
 
+<br>
+
 ### Unit of analysis and key variables
 
 The primary unit of analysis in this project is the **individual (person)**. From the full-year consolidated file (HC-251), we retain:
@@ -78,6 +89,8 @@ From the conditions file (HC-249), we retain:
 
 These variables form the basis for defining high-cost groups, describing population characteristics, and identifying the most commonly treated conditions among high-expenditure patients.
 
+<br>
+
 ### Cleaning and preparation of the person-level file (HC-251)
 
 We begin by creating a working copy of the full-year consolidated file and applying several cleaning steps:
@@ -99,6 +112,8 @@ We begin by creating a working copy of the full-year consolidated file and apply
    - `nest = TRUE` to correctly reflect the multi-stage design  
 
    All weighted estimates in the project—such as proportions, means, and quantiles—are computed under this survey design.
+
+<br>
 
 ### Construction of demographic and socioeconomic categories
 
@@ -143,6 +158,8 @@ For descriptive and stratified analyses, we recode several MEPS variables into i
 
 After creating these factors, we reconstruct the survey design object so that all downstream analyses use the updated categorical variables.
 
+<br>
+
 ### Defining expenditure groups (Top 1%, Top 5%, Top 10%, Bottom 50%)
 
 Following the approach in the MEPS Statistical Brief on the concentration of healthcare expenditures, we use survey-weighted quantiles of `totexp23` to define mutually exclusive expenditure groups:
@@ -164,6 +181,8 @@ Letting these cutpoints be \(p_{50}\), \(p_{90}\), \(p_{95}\), and \(p_{99}\), w
 The factor is ordered as: Bottom 50%, 50–90%, Top 10%, Top 5%, Top 1%. This structure allows us to align our results with prior MEPS briefs and to focus particularly on the small subset of “high-cost” patients in the Top 1% and Top 5%.
 
 We then reconstruct the survey design once more using `fyc23_clean` with `exp_group` included, enabling direct computation of weighted distributions of demographic and clinical characteristics within each expenditure group.
+
+<br>
 
 ### Cleaning and preparation of the conditions file (HC-249)
 
@@ -187,6 +206,8 @@ To study the clinical profile of high-cost patients, we process the 2023 Medical
    - `ccsr_main`  
 
    This cleaned conditions dataset (`cond23_clean`) can be merged with the person-level dataset by `dupersid`, allowing us to describe the most common CCSR categories among individuals in the Top 1%, Top 5%, and other expenditure groups.
+
+<br>
 
 ### Quality checks
 
@@ -617,11 +638,14 @@ middle-income, and high-income, grouped by insurance types. In addition, we crea
 The interactive dashboard can be accessed at [here](https://jinghg.shinyapps.io/final_projectgithub/).
 
 ***
-## Additional Analysis: Survey-Weighted Regression Modeling
+## Additional Analysis
 
+### Survey-Weighted Regression Modeling
 To complement our descriptive analyses, we conducted a series of survey-weighted logistic regression models to examine factors associated with being a high-cost individual (defined as the top 5% of total expenditures based on survey-weighted percentiles). 
 
 All models were estimated using the MEPS complex survey design, incorporating strata, PSUs, and person-level weights.
+
+<br>
 
 ### Model 1: Baseline demographic and socioeconomic predictors
 
@@ -776,6 +800,8 @@ kable(
 
 As is shown is the table, individuals `aged 45–64` and `65+` were significantly more likely to be high-cost compared with the reference age group. `Female` patients also exhibited slightly higher odds of being high-cost. Lack of insurance coverage (`Uninsured`) was another significant risk factor, highlighting the vulnerability of those without financial protection. Finally, the `number of CCSR condition categories`, our measure or multimorbidity, was significant and demonstrated the largest effect size.
 
+<br>
+
 ### Model 2: Full model including major CCSR condition indicators
 
 We extended the baseline model by adding binary indicators for the most common CCSR categories observed in the sample. We first summarized all condition records using both unweighted frequency counts and survey-weighted counts. 
@@ -910,6 +936,8 @@ kable(
 In the full model, disorders of lipid metabolism (`END010`), diabetes mellitus without complication (`END002`), depressive disorder (`MBD002`), anxiety disorders (`MBD005`), thyroid disorders (`END001`), and asthma (`RSP009`) show strong associations with higher healthcare spending.
 
 Compared with `Model 1`, `Female` is no longer a significant predictors, while others ramain significant.
+
+<br>
 
 ### Model 3: Selected model with significant predictors
 
@@ -1107,35 +1135,30 @@ Across `r n_rep` repeated `r K`-fold cross-validations, all three models yielded
 <br>
 
 ```{r}
-# Load required packages
+## Regression
 library(dplyr)
 library(ggplot2)
 library(tidyr)
 library(purrr)
 library(survey)
 
-## ------------------------------------------------------------------
-## 1. Construct multimorbidity measures and disease indicators
-## ------------------------------------------------------------------
-
-# create n_ccsr to record multi-morbidity
+## ---- create multimorbidity (person_ccsr) ----
 person_ccsr <- cond23_clean %>% 
   group_by(dupersid) %>% 
   summarise(
-    n_ccsr = n_distinct(ccsr_main),   # number of diseases with different CCSR 
+    n_ccsr = n_distinct(ccsr_main),   # number of distinct CCSR categories
     .groups = "drop"
   ) %>% 
   mutate(
     multi_morbidity = if_else(n_ccsr >= 3, 1, 0)  # threshold can be customized
   )
 
-# counts of conditions by CCSR code
+## ---- CCSR frequency (unweighted) ----
 ccsr_counts <- cond23_clean %>% 
   count(ccsr_main, sort = TRUE)
 
 head(ccsr_counts, 10)
 
-# top 20 (unweighted)
 ccsr_top20 <- ccsr_counts %>% 
   slice_max(n, n = 20)
 
@@ -1150,7 +1173,7 @@ ggplot(ccsr_top20,
     title = "Top 20 most common CCSR condition categories (unweighted)"
   )
 
-# recheck using weights
+## ---- CCSR frequency (weighted) ----
 ccsr_w_counts <- cond23_clean %>% 
   group_by(ccsr_main) %>% 
   summarise(
@@ -1173,21 +1196,21 @@ ggplot(ccsr_w_top20,
     title = "Top 20 CCSR condition categories (weighted by PERWT23F)"
   )
 
-# compare top 10 CCSR codes (unweighted vs weighted)
+## ---- compare top10 CCSR: unweighted vs weighted ----
 data.frame(
   unweighted_top10 = ccsr_counts$ccsr_main[1:10],
   weighted_top10   = ccsr_w_counts$ccsr_main[1:10]
 )
 
-ccsr_union <- union(ccsr_counts$ccsr_main[1:10], ccsr_w_counts$ccsr_main[1:10])
+ccsr_union <- union(
+  ccsr_counts$ccsr_main[1:10],
+  ccsr_w_counts$ccsr_main[1:10]
+)
 ccsr_union
 
-# create binary indicator for each CCSR in ccsr_union
-ccsr_main_values <- unique(cond23_clean$ccsr_main)
-
+## ---- create binary disease indicators in person_ccsr ----
 for (disease in ccsr_union) {
   var_name <- disease
-  # check whether the person has that disease
   person_ccsr[[var_name]] <- ifelse(
     person_ccsr$dupersid %in% cond23_clean$dupersid[cond23_clean$ccsr_main == disease],
     1, 
@@ -1195,16 +1218,14 @@ for (disease in ccsr_union) {
   )
 }
 
-## ------------------------------------------------------------------
-## 2. Merge person-level data and build survey design for modeling
-## ------------------------------------------------------------------
-
+## ---- merge to FYC file and define high_cost ----
 fyc23_model <- fyc23_clean %>%
   left_join(person_ccsr, by = "dupersid") %>% 
   mutate(
-    high_cost = ifelse(exp_group == "Top 5%", 1, 0)  # Top 5% vs others
+    high_cost = ifelse(exp_group == "Top 5%", 1, 0)    # outcome: in top 5% vs others
   )
 
+## ---- survey design object ----
 des_model <- svydesign(
   ids     = ~varpsu,
   strata  = ~varstr,
@@ -1213,11 +1234,7 @@ des_model <- svydesign(
   nest    = TRUE
 )
 
-## ------------------------------------------------------------------
-## 3. Logistic regression models and feature selection
-## ------------------------------------------------------------------
-
-# baseline model
+## ---- baseline model ----
 baseline_formula <- high_cost ~ 
   age_cat4 + sex_f + race4 + povcat_f + inscov_f + n_ccsr
 
@@ -1228,7 +1245,7 @@ model_baseline <- svyglm(
 )
 summary(model_baseline)
 
-# full model with specific high-prevalence CCSR indicators
+## ---- full model with top CCSR indicators ----
 ccsr_vars <- c(
   "CIR007","END010","MUS010","END002","MBD005",
   "MBD002","END001","MUS006","DIG004","RSP009","INJ031"
@@ -1246,11 +1263,10 @@ model_full <- svyglm(
 )
 summary(model_full)
 
-# reduced model with selected significant CCSR indicators
+## ---- selected model (significant variables) ----
 selected_vars <- c(
   "age_cat4",
   "sex_f",
-  "povcat_f",
   "inscov_f",
   "n_ccsr",
   "END010","END002","MBD005","MBD002","END001","RSP009"
@@ -1267,16 +1283,12 @@ model_selected <- svyglm(
 )
 summary(model_selected)
 
-# AIC comparison (survey-weighted effective AIC)
+## ---- compare AIC ----
 AIC(model_baseline)
 AIC(model_full)
 AIC(model_selected)
 
-## ------------------------------------------------------------------
-## 4. Cross-validated prediction error (RMSE)
-## ------------------------------------------------------------------
-
-# K-fold CV function for RMSE
+## ---- CV helper function (simple glm, no survey weights) ----
 cv_rmse <- function(formula, data, K = 5) {
   n <- nrow(data)
   folds <- sample(rep(1:K, length.out = n))
@@ -1289,18 +1301,16 @@ cv_rmse <- function(formula, data, K = 5) {
     
     fit <- glm(formula, data = train, family = binomial())
     
-    # predicted probability
     p_hat <- predict(fit, newdata = test, type = "response")
-    
-    # RMSE between predicted probability and actual 0/1
     rmse_vec[k] <- sqrt(mean((p_hat - test$high_cost)^2))
   }
   
   rmse_vec
 }
 
+## ---- prepare data for CV ----
 set.seed(1234)
-n_rep <- 10
+n_rep <- 100
 K <- 5
 
 df_cv <- fyc23_model %>%
@@ -1314,6 +1324,7 @@ df_cv <- fyc23_model %>%
     high_cost = as.numeric(high_cost)
   )
 
+## ---- run CV for three models ----
 cv_results <- map_dfr(1:n_rep, ~{
   tibble(
     model = "Baseline",
@@ -1331,7 +1342,15 @@ cv_results <- map_dfr(1:n_rep, ~{
     )
 })
 
-# visualize RMSE distributions for the three models
+## ---- summarise CV results ----
+cv_summary <- cv_results %>%
+  group_by(model) %>%
+  summarise(mean_rmse = mean(rmse)) %>%
+  arrange(model)
+
+cv_summary
+
+## ---- plot CV RMSE ----
 ggplot(cv_results, aes(x = model, y = rmse)) +
   geom_violin(trim = FALSE, fill = NA, color = "lightblue") +
   geom_boxplot(width = 0.15, fill = "white", outlier.size = 0.5) +
@@ -1341,6 +1360,7 @@ ggplot(cv_results, aes(x = model, y = rmse)) +
     title = "Cross-validated prediction error for three models"
   ) +
   theme_minimal()
+
 ```
 
 </details>
