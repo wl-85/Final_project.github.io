@@ -462,6 +462,24 @@ h1.title {
     margin: 1.6rem 0 1.8rem;
   }
 }
+
+.quick-link-btn.video-link {
+  background-color: #1f77b4;
+  border-color: #1f77b4;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.quick-link-btn.video-link i {
+  color: #ffffff;
+}
+
+.quick-link-btn.video-link:hover {
+  background-color: #14527d;
+  border-color: #14527d;
+  text-decoration: none;
+}
+
 </style>
 
 
@@ -480,6 +498,14 @@ h1.title {
 </div>
 
 <div class="quick-links">
+  
+  <a class="quick-link-btn video-link"
+     href="https://youtu.be/d-_SFeDX0Ls"
+     target="_blank"
+     rel="noopener noreferrer">
+    <i class="fa-brands fa-youtube"></i>
+    Watch project intro video
+  </a>
 
   <a class="quick-link-btn" 
    href="https://jinghg.shinyapps.io/final_projectgithub/" 
