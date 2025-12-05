@@ -488,7 +488,7 @@ h1.title {
   <i class="fa-solid fa-chart-column"></i> Interactive Dashboard
 </a>
   
-  <a class="quick-link-btn" href="project.html">
+  <a class="quick-link-btn" href="project.html#regression">
     <i class="fa-regular fa-file-lines"></i>
     Regression Models
   </a>

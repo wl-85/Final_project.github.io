@@ -415,7 +415,7 @@ prop_exp
 sum(prop_exp)  # ≈ 1
 ```
 
-## Regression Model
+## Regression Model {#regression}
 
 Quantify how demographics, socioeconomic status, and medical conditions are associated with belonging to the high-cost group.
 
