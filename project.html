@@ -1058,7 +1058,6 @@ summary(model_full)</code></pre>
 selected_vars &lt;- c(
   &quot;age_cat4&quot;,
   &quot;sex_f&quot;,
-  &quot;povcat_f&quot;,
   &quot;inscov_f&quot;,
   &quot;n_ccsr&quot;,
   &quot;END010&quot;,&quot;END002&quot;,&quot;MBD005&quot;,&quot;MBD002&quot;,&quot;END001&quot;,&quot;RSP009&quot;
@@ -1085,29 +1084,25 @@ summary(model_selected)</code></pre>
 ##     data = fyc23_model, nest = TRUE)
 ## 
 ## Coefficients:
-##                       Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)           -4.21580    0.22704 -18.568  &lt; 2e-16 ***
-## age_cat418-44          0.08623    0.24094   0.358 0.720971    
-## age_cat445-64          0.77682    0.22059   3.522 0.000579 ***
-## age_cat465+            0.54704    0.23010   2.377 0.018787 *  
-## sex_fFemale           -0.14930    0.10481  -1.424 0.156550    
-## povcat_fNear-poor     -0.08477    0.19680  -0.431 0.667312    
-## povcat_fLow income    -0.13499    0.22071  -0.612 0.541791    
-## povcat_fMiddle income -0.21729    0.16047  -1.354 0.177884    
-## povcat_fHigh income   -0.05600    0.16264  -0.344 0.731098    
-## inscov_fPublic only   -0.03292    0.08812  -0.374 0.709272    
-## inscov_fUninsured     -0.99797    0.46114  -2.164 0.032151 *  
-## n_ccsr                 0.25573    0.01336  19.143  &lt; 2e-16 ***
-## END010                -0.48306    0.11465  -4.213 4.48e-05 ***
-## END002                 0.31964    0.09942   3.215 0.001620 ** 
-## MBD005                -0.34885    0.14549  -2.398 0.017811 *  
-## MBD002                -0.37393    0.14539  -2.572 0.011153 *  
-## END001                -0.32376    0.13477  -2.402 0.017601 *  
-## RSP009                -0.35444    0.14142  -2.506 0.013343 *  
+##                     Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)         -4.31773    0.20571 -20.989  &lt; 2e-16 ***
+## age_cat418-44        0.08445    0.24168   0.349 0.727272    
+## age_cat445-64        0.78462    0.22112   3.548 0.000524 ***
+## age_cat465+          0.54424    0.22584   2.410 0.017221 *  
+## sex_fFemale         -0.15467    0.10382  -1.490 0.138489    
+## inscov_fPublic only -0.03556    0.08779  -0.405 0.686059    
+## inscov_fUninsured   -1.02154    0.46093  -2.216 0.028245 *  
+## n_ccsr               0.25654    0.01327  19.329  &lt; 2e-16 ***
+## END010              -0.48358    0.11477  -4.214 4.41e-05 ***
+## END002               0.31291    0.09915   3.156 0.001949 ** 
+## MBD005              -0.34744    0.14565  -2.385 0.018365 *  
+## MBD002              -0.37714    0.14576  -2.587 0.010662 *  
+## END001              -0.32440    0.13471  -2.408 0.017301 *  
+## RSP009              -0.34996    0.14209  -2.463 0.014956 *  
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## (Dispersion parameter for quasibinomial family taken to be 0.8664482)
+## (Dispersion parameter for quasibinomial family taken to be 0.8704885)
 ## 
 ## Number of Fisher Scoring iterations: 6</code></pre>
 <pre class="r"><code>AIC(model_baseline)</code></pre>
@@ -1118,7 +1113,7 @@ summary(model_selected)</code></pre>
 ##   31.453566 4796.998920    1.258143</code></pre>
 <pre class="r"><code>AIC(model_selected)</code></pre>
 <pre><code>##       eff.p         AIC    deltabar 
-##   21.374355 4786.736891    1.257315</code></pre>
+##   16.489108 4780.365412    1.268393</code></pre>
 <pre class="r"><code># cv validation
 cv_rmse &lt;- function(formula, data, K = 5) {
   n &lt;- nrow(data)
@@ -1142,7 +1137,7 @@ cv_rmse &lt;- function(formula, data, K = 5) {
   rmse_vec
 }</code></pre>
 <pre class="r"><code>set.seed(1234)
-n_rep &lt;- 10
+n_rep &lt;- 100
 K &lt;- 5
 
 df_cv &lt;- fyc23_model %&gt;%
@@ -1173,6 +1168,18 @@ cv_results &lt;- map_dfr(1:n_rep, ~{
       )
     )
 })</code></pre>
+<pre class="r"><code>cv_summary &lt;- cv_results %&gt;%
+  group_by(model) %&gt;%
+  summarise(mean_rmse = mean(rmse)) %&gt;%
+  arrange(model)
+
+cv_summary</code></pre>
+<pre><code>## # A tibble: 3 × 2
+##   model    mean_rmse
+##   &lt;chr&gt;        &lt;dbl&gt;
+## 1 Baseline     0.234
+## 2 Full         0.234
+## 3 Selected     0.233</code></pre>
 <pre class="r"><code>ggplot(cv_results, aes(x = model, y = rmse)) +
   geom_violin(trim = FALSE, fill = NA, color = &quot;lightblue&quot;) +
   geom_boxplot(width = 0.15, fill = &quot;white&quot;, outlier.size = 0.5) +
@@ -1182,7 +1189,7 @@ cv_results &lt;- map_dfr(1:n_rep, ~{
     title = &quot;Cross-validated prediction error for three models&quot;
   ) +
   theme_minimal()</code></pre>
-<p><img src="project_files/figure-html/unnamed-chunk-27-1.png" width="672" /></p>
+<p><img src="project_files/figure-html/unnamed-chunk-28-1.png" width="672" /></p>
 </div>
 </div>
 

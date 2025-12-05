@@ -487,6 +487,8 @@ ggplot(ccsr_w_top20,
     y = "Weighted count of conditions",
     title = "Top 20 CCSR condition categories (weighted by PERWT23F)"
   )
+
+
 ```
 
 ```{r}
@@ -571,7 +573,6 @@ summary(model_full)
 selected_vars <- c(
   "age_cat4",
   "sex_f",
-  "povcat_f",
   "inscov_f",
   "n_ccsr",
   "END010","END002","MBD005","MBD002","END001","RSP009"
@@ -626,7 +627,7 @@ cv_rmse <- function(formula, data, K = 5) {
 
 ```{r}
 set.seed(1234)
-n_rep <- 10
+n_rep <- 100
 K <- 5
 
 df_cv <- fyc23_model %>%
@@ -659,6 +660,15 @@ cv_results <- map_dfr(1:n_rep, ~{
 })
 ```
 
+```{r}
+cv_summary <- cv_results %>%
+  group_by(model) %>%
+  summarise(mean_rmse = mean(rmse)) %>%
+  arrange(model)
+
+cv_summary
+```
+
 
 ```{r}
 ggplot(cv_results, aes(x = model, y = rmse)) +
@@ -671,4 +681,3 @@ ggplot(cv_results, aes(x = model, y = rmse)) +
   ) +
   theme_minimal()
 ```
-

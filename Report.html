@@ -1337,48 +1337,421 @@ href="https://jinghg.shinyapps.io/final_projectgithub/">here</a>.</p>
 <hr />
 </div>
 </div>
-<div id="regression-results" class="section level2">
-<h2>Regression Results</h2>
-<p>In the regression analysis, we modeled membership in the Top 5%
-expenditure group as a binary outcome and examined how demographics,
-socioeconomic status, and clinical burden are associated with high-cost
-status. In the baseline survey-weighted logistic model including age
-group, sex, race/ethnicity, poverty category, insurance coverage, and
-the number of distinct CCSR condition categories, age and
-multi-morbidity were the most important predictors. Compared with
-children and younger adults, individuals aged 45–64 and 65+ had
-substantially higher odds of being high-cost, and each additional CCSR
-category was associated with a sizeable increase in the odds of
-belonging to the Top 5% group. Associations for race/ethnicity and
-poverty categories were generally small and imprecise after adjustment,
-and the estimated effect of sex attenuated once clinical covariates were
-included.</p>
-<table style="width:100%; border-collapse:collapse;">
-<tr>
-<td style="width:50%; text-align:center; padding-right:10px;">
-<img src="img/top20.png" style="width:95%;" />
-</td>
-<td style="width:50%; text-align:center; padding-left:10px;">
-<img src="img/top20_1.png" style="width:95%;" />
-</td>
+<div id="additional-analysis-survey-weighted-regression-modeling"
+class="section level2">
+<h2>Additional Analysis: Survey-Weighted Regression Modeling</h2>
+<p>To complement our descriptive analyses, we conducted a series of
+survey-weighted logistic regression models to examine factors associated
+with being a high-cost individual (defined as the top 5% of total
+expenditures based on survey-weighted percentiles).</p>
+<p>All models were estimated using the MEPS complex survey design,
+incorporating strata, PSUs, and person-level weights.</p>
+<div id="model-1-baseline-demographic-and-socioeconomic-predictors"
+class="section level3">
+<h3>Model 1: Baseline demographic and socioeconomic predictors</h3>
+<p>First, we fit an initial model with 6 predictors:</p>
+<ul>
+<li>age group (<code>age_cat4</code>)</li>
+<li>sex (<code>sex_f</code>)</li>
+<li>race/ethnicity (<code>race4</code>)</li>
+<li>poverty/income category (<code>povcat_f</code>)</li>
+<li>insurance coverage (<code>inscov_f</code>)</li>
+<li>multimorbidity (<code>n_ccsr</code>)</li>
+</ul>
+<p><code>baseline_formula &lt;- high_cost ~ age_cat4 + sex_f + race4 + povcat_f + inscov_f + n_ccsr</code></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Variable</th>
+<th align="center">Estimate</th>
+<th align="center">P-value</th>
 </tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Age 18–44</td>
+<td align="center">-0.007</td>
+<td align="center">0.9765</td>
+</tr>
+<tr class="even">
+<td align="left">Age 45–64</td>
+<td align="center">0.678</td>
+<td align="center">0.0025**</td>
+</tr>
+<tr class="odd">
+<td align="left">Age 65+</td>
+<td align="center">0.480</td>
+<td align="center">0.0347*</td>
+</tr>
+<tr class="even">
+<td align="left">Female</td>
+<td align="center">-0.214</td>
+<td align="center">0.0324*</td>
+</tr>
+<tr class="odd">
+<td align="left">NH Black</td>
+<td align="center">0.022</td>
+<td align="center">0.8889</td>
+</tr>
+<tr class="even">
+<td align="left">Hispanic</td>
+<td align="center">-0.163</td>
+<td align="center">0.2220</td>
+</tr>
+<tr class="odd">
+<td align="left">NH Asian/Other</td>
+<td align="center">-0.067</td>
+<td align="center">0.6910</td>
+</tr>
+<tr class="even">
+<td align="left">Near-poor</td>
+<td align="center">-0.060</td>
+<td align="center">0.7540</td>
+</tr>
+<tr class="odd">
+<td align="left">Low income</td>
+<td align="center">-0.158</td>
+<td align="center">0.4738</td>
+</tr>
+<tr class="even">
+<td align="left">Middle income</td>
+<td align="center">-0.210</td>
+<td align="center">0.1955</td>
+</tr>
+<tr class="odd">
+<td align="left">High income</td>
+<td align="center">-0.061</td>
+<td align="center">0.7031</td>
+</tr>
+<tr class="even">
+<td align="left">Public only insurance</td>
+<td align="center">-0.033</td>
+<td align="center">0.7061</td>
+</tr>
+<tr class="odd">
+<td align="left">Uninsured</td>
+<td align="center">-0.938</td>
+<td align="center">0.0451*</td>
+</tr>
+<tr class="even">
+<td align="left">Number of CCSR categories</td>
+<td align="center">0.214</td>
+<td align="center">0.0000***</td>
+</tr>
+</tbody>
 </table>
-<p>We then augmented the baseline model with binary indicators for the
-most prevalent CCSR categories and constructed a reduced “selected”
-model retaining only statistically significant diagnosis indicators.
-Both the full and selected models achieved lower survey-weighted AIC
-than the baseline model, indicating improved in-sample fit. However,
-repeated K-fold cross-validation revealed very similar RMSE
-distributions for the baseline, full, and selected models, with
-substantial overlap across the three specifications. This pattern
-suggests that while adding diagnosis-specific indicators improves model
-fit to the observed data, it yields only modest gains in out-of-sample
-predictive accuracy. Overall, the count of distinct CCSR categories—the
-simple multi-morbidity measure—remains the dominant and most stable
-predictor of high-cost status, whereas individual diagnoses contribute
-relatively little incremental predictive information once
-multi-morbidity and age are taken into account.</p>
-<p><img src="img/reg.png" style="width:70.0%" /></p>
+<p>As is shown is the table, individuals <code>aged 45–64</code> and
+<code>65+</code> were significantly more likely to be high-cost compared
+with the reference age group. <code>Female</code> patients also
+exhibited slightly higher odds of being high-cost. Lack of insurance
+coverage (<code>Uninsured</code>) was another significant risk factor,
+highlighting the vulnerability of those without financial protection.
+Finally, the <code>number of CCSR condition categories</code>, our
+measure or multimorbidity, was significant and demonstrated the largest
+effect size.</p>
+</div>
+<div id="model-2-full-model-including-major-ccsr-condition-indicators"
+class="section level3">
+<h3>Model 2: Full model including major CCSR condition indicators</h3>
+<p>We extended the baseline model by adding binary indicators for the
+most common CCSR categories observed in the sample. We first summarized
+all condition records using both unweighted frequency counts and
+survey-weighted counts.</p>
+<p><img src="Report_files/figure-html/unnamed-chunk-11-1.png" width="480" /><img src="Report_files/figure-html/unnamed-chunk-11-2.png" width="480" /></p>
+<p>The two rankings were largely consistent, and we selected the union
+of the top conditions from both lists to ensure clinically relevant and
+high-prevalence categories were included. This process resulted in 11
+CCSR binary indicators, each representing whether a person had at least
+one condition in that category. Including:</p>
+<ul>
+<li><strong>CIR007</strong>: Essential hypertension</li>
+<li><strong>END010</strong>: Disorders of lipid metabolism</li>
+<li><strong>MUS010</strong>: Musculoskeletal pain<br />
+</li>
+<li><strong>END002</strong>: Diabetes mellitus without complication</li>
+<li><strong>MBD005</strong>: Anxiety and fear-related disorders<br />
+</li>
+<li><strong>MBD002</strong>: Depressive disorder<br />
+</li>
+<li><strong>END001</strong>: Thyroid disorders</li>
+<li><strong>MUS006</strong>: Osteoarthritis</li>
+<li><strong>DIG004</strong>: Esophageal disorders<br />
+</li>
+<li><strong>RSP009</strong>: Asthma</li>
+<li><strong>INJ031</strong>: Allergic reactions</li>
+</ul>
+<p><code>full_formula &lt;- high_cost ~ age_cat4 + sex_f + race4 + povcat_f + inscov_f + n_ccsr</code></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Variable</th>
+<th align="center">Estimate</th>
+<th align="center">P-value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Age 18–44</td>
+<td align="center">0.102</td>
+<td align="center">0.6709</td>
+</tr>
+<tr class="even">
+<td align="left">Age 45–64</td>
+<td align="center">0.832</td>
+<td align="center">2e-04***</td>
+</tr>
+<tr class="odd">
+<td align="left">Age 65+</td>
+<td align="center">0.594</td>
+<td align="center">0.0113*</td>
+</tr>
+<tr class="even">
+<td align="left">Female</td>
+<td align="center">-0.157</td>
+<td align="center">0.1529</td>
+</tr>
+<tr class="odd">
+<td align="left">NH Black</td>
+<td align="center">-0.043</td>
+<td align="center">0.7984</td>
+</tr>
+<tr class="even">
+<td align="left">Hispanic</td>
+<td align="center">-0.225</td>
+<td align="center">0.1002</td>
+</tr>
+<tr class="odd">
+<td align="left">NH Asian/Other</td>
+<td align="center">-0.093</td>
+<td align="center">0.5901</td>
+</tr>
+<tr class="even">
+<td align="left">Near-poor</td>
+<td align="center">-0.079</td>
+<td align="center">0.6924</td>
+</tr>
+<tr class="odd">
+<td align="left">Low income</td>
+<td align="center">-0.149</td>
+<td align="center">0.501</td>
+</tr>
+<tr class="even">
+<td align="left">Middle income</td>
+<td align="center">-0.232</td>
+<td align="center">0.1486</td>
+</tr>
+<tr class="odd">
+<td align="left">High income</td>
+<td align="center">-0.088</td>
+<td align="center">0.5782</td>
+</tr>
+<tr class="even">
+<td align="left">Public only insurance</td>
+<td align="center">-0.021</td>
+<td align="center">0.8096</td>
+</tr>
+<tr class="odd">
+<td align="left">Uninsured</td>
+<td align="center">-0.949</td>
+<td align="center">0.0422*</td>
+</tr>
+<tr class="even">
+<td align="left">Number of CCSR categories</td>
+<td align="center">0.266</td>
+<td align="center">0***</td>
+</tr>
+<tr class="odd">
+<td align="left">Essential hypertension</td>
+<td align="center">-0.194</td>
+<td align="center">0.1088</td>
+</tr>
+<tr class="even">
+<td align="left">Disorders of lipid metabolism</td>
+<td align="center">-0.444</td>
+<td align="center">2e-04***</td>
+</tr>
+<tr class="odd">
+<td align="left">Musculoskeletal pain</td>
+<td align="center">-0.168</td>
+<td align="center">0.1024</td>
+</tr>
+<tr class="even">
+<td align="left">Diabetes mellitus (no complication)</td>
+<td align="center">0.336</td>
+<td align="center">0.001***</td>
+</tr>
+<tr class="odd">
+<td align="left">Anxiety disorders</td>
+<td align="center">-0.377</td>
+<td align="center">0.0119*</td>
+</tr>
+<tr class="even">
+<td align="left">Depressive disorder</td>
+<td align="center">-0.399</td>
+<td align="center">0.0074**</td>
+</tr>
+<tr class="odd">
+<td align="left">Thyroid disorders</td>
+<td align="center">-0.343</td>
+<td align="center">0.0136*</td>
+</tr>
+<tr class="even">
+<td align="left">Osteoarthritis</td>
+<td align="center">0.002</td>
+<td align="center">0.9865</td>
+</tr>
+<tr class="odd">
+<td align="left">Esophageal disorders</td>
+<td align="center">-0.031</td>
+<td align="center">0.8243</td>
+</tr>
+<tr class="even">
+<td align="left">Asthma</td>
+<td align="center">-0.363</td>
+<td align="center">0.0115*</td>
+</tr>
+<tr class="odd">
+<td align="left">Allergic reactions</td>
+<td align="center">-0.125</td>
+<td align="center">0.4059</td>
+</tr>
+</tbody>
+</table>
+<p>In the full model, disorders of lipid metabolism
+(<code>END010</code>), diabetes mellitus without complication
+(<code>END002</code>), depressive disorder (<code>MBD002</code>),
+anxiety disorders (<code>MBD005</code>), thyroid disorders
+(<code>END001</code>), and asthma (<code>RSP009</code>) show strong
+associations with higher healthcare spending.</p>
+<p>Compared with <code>Model 1</code>, <code>Female</code> is no longer
+a significant predictors, while others ramain significant.</p>
+</div>
+<div id="model-3-selected-model-with-significant-predictors"
+class="section level3">
+<h3>Model 3: Selected model with significant predictors</h3>
+<p>For <code>Model 3</code>, we only add the predictors that are
+significant in <code>Model 1</code> and <code>Model 2</code>, reducing
+model complexity.</p>
+<p><code>selected_formula &lt;- high_cost ~ age_cat4 + sex_f +  inscov_f + n_ccsr + END010 + END002 + MBD005 + MBD002 + END001 + RSP009</code></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Variable</th>
+<th align="center">Estimate</th>
+<th align="center">P-value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Age 18–44</td>
+<td align="center">0.084</td>
+<td align="center">0.7273</td>
+</tr>
+<tr class="even">
+<td align="left">Age 45–64</td>
+<td align="center">0.785</td>
+<td align="center">5e-04***</td>
+</tr>
+<tr class="odd">
+<td align="left">Age 65+</td>
+<td align="center">0.544</td>
+<td align="center">0.0172*</td>
+</tr>
+<tr class="even">
+<td align="left">Female</td>
+<td align="center">-0.155</td>
+<td align="center">0.1385</td>
+</tr>
+<tr class="odd">
+<td align="left">Public only insurance</td>
+<td align="center">-0.036</td>
+<td align="center">0.6861</td>
+</tr>
+<tr class="even">
+<td align="left">Uninsured</td>
+<td align="center">-1.022</td>
+<td align="center">0.0282*</td>
+</tr>
+<tr class="odd">
+<td align="left">Number of CCSR categories</td>
+<td align="center">0.257</td>
+<td align="center">0***</td>
+</tr>
+<tr class="even">
+<td align="left">Disorders of lipid metabolism</td>
+<td align="center">-0.484</td>
+<td align="center">0***</td>
+</tr>
+<tr class="odd">
+<td align="left">Diabetes mellitus (no complication)</td>
+<td align="center">0.313</td>
+<td align="center">0.0019**</td>
+</tr>
+<tr class="even">
+<td align="left">Anxiety disorders</td>
+<td align="center">-0.347</td>
+<td align="center">0.0184*</td>
+</tr>
+<tr class="odd">
+<td align="left">Depressive disorder</td>
+<td align="center">-0.377</td>
+<td align="center">0.0107*</td>
+</tr>
+<tr class="even">
+<td align="left">Thyroid disorders</td>
+<td align="center">-0.324</td>
+<td align="center">0.0173*</td>
+</tr>
+<tr class="odd">
+<td align="left">Asthma</td>
+<td align="center">-0.350</td>
+<td align="center">0.015*</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="model-comparison" class="section level3">
+<h3>Model Comparison</h3>
+<p>We compared the performance of the three fitted models using AIC. A
+lower AIC indicates a better trade-off between model fit and
+complexity.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="center">Model</th>
+<th align="center">AIC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">Baseline model</td>
+<td align="center">4840.25</td>
+</tr>
+<tr class="even">
+<td align="center">Full model</td>
+<td align="center">4797.00</td>
+</tr>
+<tr class="odd">
+<td align="center">Selected model</td>
+<td align="center">4780.37</td>
+</tr>
+</tbody>
+</table>
+<p>Accordingly, the <code>Selected model</code> achieves the lowest AIC
+4780.37. This suggests that adding clinically relevant CCSR indicators
+improves model fit, and further removing non-significant predictors
+yields a more efficient model without sacrificing performance.</p>
+<p>To assess the predictive performance across different cohorts, we
+next perform repeated K-fold cross-validation on all three models and
+compare their RMSE distributions. We chose to repeat 100 times with
+K=5.</p>
+<p><img src="Report_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<p>Across 100 repeated 5-fold cross-validations, all three models
+yielded very similar RMSE values. The selected model achieved the lowest
+average RMSE (≈0.2331). Although the improvement is modest, this
+suggests that adding a small set of targeted CCSR indicators contributes
+slightly better predictive accuracy than including all conditions or
+using demographics alone.</p>
 <p><br></p>
 <p><em>The full, reproducible code used to implement the regression
 modeling and cross-validation procedures described above is provided
@@ -1443,7 +1816,7 @@ ggplot(ccsr_top20,
     y = &quot;Number of condition records&quot;,
     title = &quot;Top 20 most common CCSR condition categories (unweighted)&quot;
   )</code></pre>
-<p><img src="Report_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p><img src="Report_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
 <pre class="r"><code># recheck using weights
 ccsr_w_counts &lt;- cond23_clean %&gt;% 
   group_by(ccsr_main) %&gt;% 
@@ -1466,7 +1839,7 @@ ggplot(ccsr_w_top20,
     y = &quot;Weighted count of conditions&quot;,
     title = &quot;Top 20 CCSR condition categories (weighted by PERWT23F)&quot;
   )</code></pre>
-<p><img src="Report_files/figure-html/unnamed-chunk-7-2.png" width="672" /></p>
+<p><img src="Report_files/figure-html/unnamed-chunk-20-2.png" width="672" /></p>
 <pre class="r"><code># compare top 10 CCSR codes (unweighted vs weighted)
 data.frame(
   unweighted_top10 = ccsr_counts$ccsr_main[1:10],
@@ -1755,27 +2128,26 @@ ggplot(cv_results, aes(x = model, y = rmse)) +
     title = &quot;Cross-validated prediction error for three models&quot;
   ) +
   theme_minimal()</code></pre>
-<p><img src="Report_files/figure-html/unnamed-chunk-7-3.png" width="672" /></p>
+<p><img src="Report_files/figure-html/unnamed-chunk-20-3.png" width="672" /></p>
 </details>
 <hr />
 </div>
+</div>
 <div id="discussion" class="section level2">
 <h2>Discussion</h2>
-<p>Our findings show that extremely high health care spending in 2023 is
-concentrated among a small subset of older, multiply-morbid individuals,
-and that a parsimonious set of variables—age, insurance coverage, and a
-simple measure of multi-morbidity—captures most of the predictive signal
-available in MEPS. More complex models that incorporate detailed
-diagnosis indicators improve statistical fit but do not substantially
-enhance the ability to distinguish Top-5% spenders from the rest of the
-population. This underscores both the central role of multi-morbid
-chronic disease in driving expenditures and the limitations of
-cross-sectional survey data for prospective “hot-spotting.” From a
-policy perspective, these results suggest that risk-stratification and
-care-management efforts may benefit more from simple, robust measures of
-condition burden and age, coupled with system-level interventions to
-coordinate chronic care, rather than from increasingly complex
-predictive models built on limited cross-sectional information.</p>
+<p>Our findings indicate that a parsimonious set of demographic and
+clinical predictors can meaningfully distinguish high cost patients in
+the 2023 MEPS sample. The final model incorporates age, insurance
+status, multimorbidity burden, and six key CCSR based condition
+indicators, suggesting that a relatively small and interpretable set of
+health and socioeconomic characteristics is sufficient to capture much
+of the observable contrast between high and lower cost individuals.
+Although overall predictive performance is modest, which is typical for
+rare and highly variable cost outcomes in population based survey data,
+the model nonetheless provides actionable signal that may support
+earlier identification of high cost patients and inform the design and
+targeting of care management or cost containment interventions in value
+based care settings.</p>
 </div>
 
 

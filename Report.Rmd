@@ -617,23 +617,485 @@ middle-income, and high-income, grouped by insurance types. In addition, we crea
 The interactive dashboard can be accessed at [here](https://jinghg.shinyapps.io/final_projectgithub/).
 
 ***
-## Regression Results
-In the regression analysis, we modeled membership in the Top 5% expenditure group as a binary outcome and examined how demographics, socioeconomic status, and clinical burden are associated with high-cost status. In the baseline survey-weighted logistic model including age group, sex, race/ethnicity, poverty category, insurance coverage, and the number of distinct CCSR condition categories, age and multi-morbidity were the most important predictors. Compared with children and younger adults, individuals aged 45–64 and 65+ had substantially higher odds of being high-cost, and each additional CCSR category was associated with a sizeable increase in the odds of belonging to the Top 5% group. Associations for race/ethnicity and poverty categories were generally small and imprecise after adjustment, and the estimated effect of sex attenuated once clinical covariates were included.
+## Additional Analysis: Survey-Weighted Regression Modeling
 
-<table style="width:100%; border-collapse:collapse;">
-<tr>
-  <td style="width:50%; text-align:center; padding-right:10px;">
-    <img src="img/top20.png" style="width:95%;" />
-  </td>
-  <td style="width:50%; text-align:center; padding-left:10px;">
-    <img src="img/top20_1.png" style="width:95%;" />
-  </td>
-</tr>
-</table>
+To complement our descriptive analyses, we conducted a series of survey-weighted logistic regression models to examine factors associated with being a high-cost individual (defined as the top 5% of total expenditures based on survey-weighted percentiles). 
 
-We then augmented the baseline model with binary indicators for the most prevalent CCSR categories and constructed a reduced “selected” model retaining only statistically significant diagnosis indicators. Both the full and selected models achieved lower survey-weighted AIC than the baseline model, indicating improved in-sample fit. However, repeated K-fold cross-validation revealed very similar RMSE distributions for the baseline, full, and selected models, with substantial overlap across the three specifications. This pattern suggests that while adding diagnosis-specific indicators improves model fit to the observed data, it yields only modest gains in out-of-sample predictive accuracy. Overall, the count of distinct CCSR categories—the simple multi-morbidity measure—remains the dominant and most stable predictor of high-cost status, whereas individual diagnoses contribute relatively little incremental predictive information once multi-morbidity and age are taken into account.
+All models were estimated using the MEPS complex survey design, incorporating strata, PSUs, and person-level weights.
 
-![](img/reg.png){width=70%}
+### Model 1: Baseline demographic and socioeconomic predictors
+
+First, we fit an initial model with 6 predictors:
+
+- age group (`age_cat4`)
+- sex (`sex_f`)
+- race/ethnicity (`race4`)
+- poverty/income category (`povcat_f`)
+- insurance coverage (`inscov_f`)
+- multimorbidity (`n_ccsr`)
+
+`baseline_formula <- high_cost ~ age_cat4 + sex_f + race4 + povcat_f + inscov_f + n_ccsr`
+
+```{r echo=FALSE}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(purrr)
+library(survey)
+
+# create n_ccsr to record multi-morbidity
+person_ccsr <- cond23_clean %>% 
+  group_by(dupersid) %>% 
+  summarise(
+    n_ccsr = n_distinct(ccsr_main),   # number of diseases with different CCSR 
+    .groups = "drop"
+  ) %>% 
+  mutate(
+    multi_morbidity = if_else(n_ccsr >= 3, 1, 0)  # threshold can be customized
+  )
+
+ccsr_counts <- cond23_clean %>% 
+  count(ccsr_main, sort = TRUE)
+
+ccsr_top20 <- ccsr_counts %>% 
+  slice_max(n, n = 20)
+
+# recheck using weight
+ccsr_w_counts <- cond23_clean %>% 
+  group_by(ccsr_main) %>% 
+  summarise(
+    w_count = sum(perwt23f, na.rm = TRUE),
+    .groups = "drop"
+  ) %>% 
+  arrange(desc(w_count))
+
+ccsr_w_top20 <- ccsr_w_counts %>% 
+  slice_max(w_count, n = 20)
+
+ccsr_union <- union(ccsr_counts$ccsr_main[1:10], ccsr_w_counts$ccsr_main[1:10])
+
+ccsr_main_values <- unique(cond23_clean$ccsr_main)
+
+# create binary variable for each ccsr in ccsr_union
+for (disease in ccsr_union) {
+  var_name <- disease
+  # check whether the person has that disease
+  person_ccsr[[var_name]] <- ifelse(
+    person_ccsr$dupersid %in% cond23_clean$dupersid[cond23_clean$ccsr_main == disease],
+    1, 
+    0
+  )
+}
+
+fyc23_model <- fyc23_clean %>%
+  left_join(person_ccsr, by = "dupersid") %>% 
+  mutate(high_cost = ifelse(exp_group == "Top 5%", 1, 0))
+# set outcome variable as 'whether the person is in the top 5% expenses group'
+         
+
+des_model <- svydesign(
+  ids     = ~varpsu,
+  strata  = ~varstr,
+  weights = ~perwt23f,
+  data    = fyc23_model,
+  nest    = TRUE
+)
+```
+
+```{r echo=FALSE}
+# summary(model_baseline)
+```
+
+```{r echo=FALSE}
+# baseline model
+baseline_formula <- high_cost ~ 
+  age_cat4 + sex_f + race4 + povcat_f + inscov_f + n_ccsr
+
+model_baseline <- svyglm(
+  baseline_formula,
+  design = des_model,
+  family = quasibinomial()
+)
+
+```
+
+```{r echo=FALSE}
+# Extract coefficients from baseline model
+coef_tab <- summary(model_baseline)$coefficients
+
+# Function: attach significance codes directly to the p-value string
+add_sig <- function(p) {
+  code <- ifelse(p < 0.001, "***",
+          ifelse(p < 0.01, "**",
+          ifelse(p < 0.05, "*",
+          ifelse(p < 0.1, ".", ""))))
+  paste0(format(round(p, 4), nsmall = 4), code)
+}
+
+baseline_results <- data.frame(
+  Variable  = rownames(coef_tab),
+  Estimate  = coef_tab[, "Estimate"],
+  P_value   = coef_tab[, "Pr(>|t|)"]
+) %>%
+  dplyr::filter(Variable != "(Intercept)") %>%
+  mutate(
+    Pretty = recode(
+      Variable,
+      "age_cat418-44"         = "Age 18–44",
+      "age_cat445-64"         = "Age 45–64",
+      "age_cat465+"           = "Age 65+",
+      "sex_fFemale"           = "Female",
+      "race4NH Black"         = "NH Black",
+      "race4Hispanic"         = "Hispanic",
+      "race4NH Asian/Other"   = "NH Asian/Other",
+      "povcat_fNear-poor"     = "Near-poor",
+      "povcat_fLow income"    = "Low income",
+      "povcat_fMiddle income" = "Middle income",
+      "povcat_fHigh income"   = "High income",
+      "inscov_fPublic only"   = "Public only insurance",
+      "inscov_fUninsured"     = "Uninsured",
+      "n_ccsr"                = "Number of CCSR categories"
+    ),
+    Estimate = round(Estimate, 3),
+    P_value  = add_sig(P_value)
+  ) %>%
+  select(Variable = Pretty, Estimate, P_value)
+
+# Print clean table with kable
+library(knitr)
+kable(
+  baseline_results,
+  col.names = c("Variable", "Estimate", "P-value"),
+  align = c("l", "c", "c"),
+  row.names = FALSE
+)
+
+
+
+```
+
+As is shown is the table, individuals `aged 45–64` and `65+` were significantly more likely to be high-cost compared with the reference age group. `Female` patients also exhibited slightly higher odds of being high-cost. Lack of insurance coverage (`Uninsured`) was another significant risk factor, highlighting the vulnerability of those without financial protection. Finally, the `number of CCSR condition categories`, our measure or multimorbidity, was significant and demonstrated the largest effect size.
+
+### Model 2: Full model including major CCSR condition indicators
+
+We extended the baseline model by adding binary indicators for the most common CCSR categories observed in the sample. We first summarized all condition records using both unweighted frequency counts and survey-weighted counts. 
+
+```{r echo=FALSE, fig.width=5, fig.height=4}
+
+ggplot(ccsr_top20,
+       aes(x = reorder(ccsr_main, n),
+           y = n)) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    x = "CCSR category",
+    y = "Number of condition records",
+    title = "Top 20 most common CCSR condition categories (unweighted)"
+  )+
+  theme(plot.title = element_text(size = 10, hjust = 0))
+
+ggplot(ccsr_w_top20,
+       aes(x = reorder(ccsr_main, w_count),
+           y = w_count)) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    x = "CCSR category",
+    y = "Weighted count of conditions",
+    title = "Top 20 CCSR condition categories (weighted by PERWT23F)"
+  )+
+  theme(plot.title = element_text(size = 10, hjust = 0))
+```
+
+The two rankings were largely consistent, and we selected the union of the top conditions from both lists to ensure clinically relevant and high-prevalence categories were included. This process resulted in 11 CCSR binary indicators, each representing whether a person had at least one condition in that category. Including:
+
+- **CIR007**: Essential hypertension
+- **END010**: Disorders of lipid metabolism
+- **MUS010**: Musculoskeletal pain  
+- **END002**: Diabetes mellitus without complication 
+- **MBD005**: Anxiety and fear-related disorders  
+- **MBD002**: Depressive disorder  
+- **END001**: Thyroid disorders
+- **MUS006**: Osteoarthritis
+- **DIG004**: Esophageal disorders  
+- **RSP009**: Asthma
+- **INJ031**: Allergic reactions
+
+
+```{r echo=FALSE}
+# full model
+ccsr_vars <- c("CIR007","END010","MUS010","END002","MBD005",          "MBD002","END001","MUS006","DIG004","RSP009","INJ031")
+
+full_formula <- update(
+  baseline_formula,
+  paste(". ~ . +", paste(ccsr_vars, collapse = " + "))
+)
+
+model_full <- svyglm(
+  full_formula,
+  design = des_model,
+  family = quasibinomial()
+)
+
+```
+
+`full_formula <- high_cost ~ age_cat4 + sex_f + race4 + povcat_f + inscov_f + n_ccsr`
+
+```{r echo=FALSE}
+coef_full <- summary(model_full)$coefficients
+
+full_results <- data.frame(
+  Variable_raw = rownames(coef_full),
+  Estimate = coef_full[, "Estimate"],
+  P_value = coef_full[, "Pr(>|t|)"]
+) %>%
+  filter(Variable_raw != "(Intercept)") %>%
+  
+  mutate(
+    Variable = recode(
+      Variable_raw,
+      # Demographics
+      "age_cat418-44"       = "Age 18–44",
+      "age_cat445-64"       = "Age 45–64",
+      "age_cat465+"         = "Age 65+",
+      "sex_fFemale"         = "Female",
+      "race4NH Black"       = "NH Black",
+      "race4Hispanic"       = "Hispanic",
+      "race4NH Asian/Other" = "NH Asian/Other",
+      "povcat_fNear-poor"   = "Near-poor",
+      "povcat_fLow income"  = "Low income",
+      "povcat_fMiddle income" = "Middle income",
+      "povcat_fHigh income" = "High income",
+      "inscov_fPublic only" = "Public only insurance",
+      "inscov_fUninsured"   = "Uninsured",
+      "n_ccsr"              = "Number of CCSR categories",
+      
+      "CIR007" = "Essential hypertension",
+      "END010" = "Disorders of lipid metabolism",
+      "MUS010" = "Musculoskeletal pain",
+      "END002" = "Diabetes mellitus (no complication)",
+      "MBD005" = "Anxiety disorders",
+      "MBD002" = "Depressive disorder",
+      "END001" = "Thyroid disorders",
+      "MUS006" = "Osteoarthritis",
+      "DIG004" = "Esophageal disorders",
+      "RSP009" = "Asthma",
+      "INJ031" = "Allergic reactions"
+    ),
+    
+    Estimate = round(Estimate, 3),
+    P_display = round(P_value, 4),
+    
+    Stars = case_when(
+      P_value < 0.001 ~ "***",
+      P_value < 0.01  ~ "**",
+      P_value < 0.05  ~ "*",
+      TRUE ~ ""
+    ),
+    
+    P_value_final = paste0(P_display, Stars)
+  ) %>%
+  
+  select(Variable, Estimate, `P-value` = P_value_final)
+
+kable(
+  full_results,
+  col.names = c("Variable", "Estimate", "P-value"),
+  align = c("l","c","c"),
+  row.names = FALSE
+)
+
+```
+
+In the full model, disorders of lipid metabolism (`END010`), diabetes mellitus without complication (`END002`), depressive disorder (`MBD002`), anxiety disorders (`MBD005`), thyroid disorders (`END001`), and asthma (`RSP009`) show strong associations with higher healthcare spending.
+
+Compared with `Model 1`, `Female` is no longer a significant predictors, while others ramain significant.
+
+### Model 3: Selected model with significant predictors
+
+```{r echo=FALSE}
+# model with selected significant variables
+selected_vars <- c(
+  "age_cat4",
+  "sex_f",
+  "inscov_f",
+  "n_ccsr",
+  "END010","END002","MBD005","MBD002","END001","RSP009"
+)
+
+full_formula2 <- as.formula(
+  paste("high_cost ~", paste(selected_vars, collapse = " + "))
+)
+
+
+model_selected <- svyglm(
+  full_formula2,
+  design = des_model,
+  family = quasibinomial()
+)
+
+```
+
+For `Model 3`, we only add the predictors that are significant in `Model 1` and `Model 2`, reducing model complexity. 
+
+`selected_formula <- high_cost ~ age_cat4 + sex_f +  inscov_f + n_ccsr + END010 + END002 + MBD005 + MBD002 + END001 + RSP009`
+  
+```{r echo=FALSE}
+# Extract coefficients
+coef_tab3 <- summary(model_selected)$coefficients
+
+selected_results <- data.frame(
+  Variable = rownames(coef_tab3),
+  Estimate = coef_tab3[, "Estimate"],
+  P_value  = coef_tab3[, "Pr(>|t|)"]
+) %>%
+  filter(Variable != "(Intercept)") %>%
+  mutate(
+    Pretty = recode(
+      Variable,
+      "age_cat418-44" = "Age 18–44",
+      "age_cat445-64" = "Age 45–64",
+      "age_cat465+"   = "Age 65+",
+      "sex_fFemale"   = "Female",
+
+      "inscov_fPublic only" = "Public only insurance",
+      "inscov_fUninsured"   = "Uninsured",
+
+      "n_ccsr"   = "Number of CCSR categories",
+
+      # CCSR conditions
+      "END010" = "Disorders of lipid metabolism",
+      "END002" = "Diabetes mellitus (no complication)",
+      "MBD005" = "Anxiety disorders",
+      "MBD002" = "Depressive disorder",
+      "END001" = "Thyroid disorders",
+      "RSP009" = "Asthma"
+    ),
+    Estimate = round(Estimate, 3),
+    P_value  = round(P_value, 4),
+    Sig = case_when(
+      P_value < 0.001 ~ "***",
+      P_value < 0.01  ~ "**",
+      P_value < 0.05  ~ "*",
+      P_value < 0.1   ~ ".",
+      TRUE            ~ ""
+    ),
+    P_value = paste0(P_value, Sig)
+  ) %>%
+  select(Variable = Pretty, Estimate, P_value)
+
+# Display table
+library(knitr)
+kable(
+  selected_results,
+  col.names = c("Variable", "Estimate", "P-value"),
+  align = c("l", "c", "c"),
+  row.names = FALSE
+)
+
+```
+
+### Model Comparison
+
+We compared the performance of the three fitted models using AIC. A lower AIC indicates a better trade-off between model fit and complexity.
+
+```{r echo=FALSE}
+aic_values <- data.frame(
+  Model = c("Baseline model", "Full model", "Selected model"),
+  AIC = c(
+    as.numeric(AIC(model_baseline)["AIC"]),
+    as.numeric(AIC(model_full)["AIC"]),
+    as.numeric(AIC(model_selected)["AIC"])
+  )
+)
+
+kable(
+  aic_values,
+  col.names = c("Model", "AIC"),
+  digits = 2,
+  align = "c",
+  row.names = FALSE
+)
+```
+
+Accordingly, the `Selected model` achieves the lowest AIC `r round(AIC(model_selected)["AIC"], 2)`. This suggests that adding clinically relevant CCSR indicators improves model fit, and further removing non-significant predictors yields a more efficient model without sacrificing performance.
+
+```{r echo=FALSE}
+# cv validation
+cv_rmse <- function(formula, data, K = 5) {
+  n <- nrow(data)
+  folds <- sample(rep(1:K, length.out = n))
+  
+  rmse_vec <- numeric(K)
+  
+  for (k in 1:K) {
+    train <- data[folds != k, ]
+    test  <- data[folds == k, ]
+    
+    fit <- glm(formula, data = train, family = binomial())
+    
+  
+    p_hat <- predict(fit, newdata = test, type = "response")
+    
+    # RMSE between predicted probability and actual 0/1
+    rmse_vec[k] <- sqrt(mean((p_hat - test$high_cost)^2))
+  }
+  
+  rmse_vec
+}
+
+```
+
+```{r echo=FALSE}
+set.seed(1234)
+n_rep <- 100
+K <- 5
+
+df_cv <- fyc23_model %>%
+  select(
+    high_cost,
+    age_cat4, sex_f, race4, povcat_f, inscov_f, n_ccsr,
+    CIR007, END010, MUS010, END002, MBD005, MBD002, END001, MUS006, DIG004, RSP009, INJ031
+  )%>%
+  drop_na() %>%                            
+  mutate(
+    high_cost = as.numeric(high_cost),      
+   
+  )
+
+cv_results <- map_dfr(1:n_rep, ~{
+  tibble(
+    model = "Baseline",
+    rmse  = cv_rmse(baseline_formula, df_cv, K = K)
+  ) %>%
+    bind_rows(
+      tibble(
+        model = "Full",
+        rmse  = cv_rmse(full_formula, df_cv, K = K)
+      ),
+      tibble(
+        model = "Selected",
+        rmse  = cv_rmse(full_formula2, df_cv, K = K)
+      )
+    )
+})
+```
+
+To assess the predictive performance across different cohorts, we next perform repeated K-fold cross-validation on all three models and compare their RMSE distributions. We chose to repeat 100 times with K=`r K`.
+
+```{r echo=FALSE}
+ggplot(cv_results, aes(x = model, y = rmse)) +
+  geom_violin(trim = FALSE, fill = NA, color = "lightblue") +
+  geom_boxplot(width = 0.15, fill = "white", outlier.size = 0.5) +
+  labs(
+    x = NULL,
+    y = "Cross-validated RMSE",
+    title = "Cross-validated prediction error"
+  ) +
+  theme_minimal()
+```
+
+Across `r n_rep` repeated `r K`-fold cross-validations, all three models yielded very similar RMSE values. The selected model achieved the lowest average RMSE (≈0.2331). Although the improvement is modest, this suggests that adding a small set of targeted CCSR indicators contributes slightly better predictive accuracy than including all conditions or using demographics alone.
 
 <br>
 
@@ -885,5 +1347,6 @@ ggplot(cv_results, aes(x = model, y = rmse)) +
 
 ***
 ## Discussion
-Our findings show that extremely high health care spending in 2023 is concentrated among a small subset of older, multiply-morbid individuals, and that a parsimonious set of variables—age, insurance coverage, and a simple measure of multi-morbidity—captures most of the predictive signal available in MEPS. More complex models that incorporate detailed diagnosis indicators improve statistical fit but do not substantially enhance the ability to distinguish Top-5% spenders from the rest of the population. This underscores both the central role of multi-morbid chronic disease in driving expenditures and the limitations of cross-sectional survey data for prospective “hot-spotting.” From a policy perspective, these results suggest that risk-stratification and care-management efforts may benefit more from simple, robust measures of condition burden and age, coupled with system-level interventions to coordinate chronic care, rather than from increasingly complex predictive models built on limited cross-sectional information.
+Our findings indicate that a parsimonious set of demographic and clinical predictors can meaningfully distinguish high cost patients in the 2023 MEPS sample. The final model incorporates age, insurance status, multimorbidity burden, and six key CCSR based condition indicators, suggesting that a relatively small and interpretable set of health and socioeconomic characteristics is sufficient to capture much of the observable contrast between high and lower cost individuals. Although overall predictive performance is modest, which is typical for rare and highly variable cost outcomes in population based survey data, the model nonetheless provides actionable signal that may support earlier identification of high cost patients and inform the design and targeting of care management or cost containment interventions in value based care settings.
+
 
